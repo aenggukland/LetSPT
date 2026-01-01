@@ -9,7 +9,7 @@ body:
       placeholder: 자세히 적을수록 좋습니다!
     validations:
       required: true
-  - type: textarea
+  - type: textarea 
     attributes:
       label: ✅ 작업할 내용
       description: 할 일을 체크박스 형태로 작성해주세요.
