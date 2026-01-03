@@ -1,12 +1,12 @@
-name: "🐞 Bug"
-description: "버그 발견 및 수정"
-title: "[Bug]: "
-labels: ["bug"]
+name: "🚀 Refactor"
+description: "유지보수 관련 작업"
+title: "[Refactor]: "
+labels: ["refactor"]
 body:
   - type: textarea
     attributes:
       label: 📄 설명
-      description: 수정할 기능에 대한 설명을 작성해 주세요.
+      description: 수정한 기능에 대한 설명을 작성해 주세요.
       placeholder: 자세히 적을수록 좋습니다!
     validations:
       required: true
