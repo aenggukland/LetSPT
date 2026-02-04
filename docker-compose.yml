@@ -15,7 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    build: .
+    image: inkug/letspt-app:latest
     container_name: letspt-app
     depends_on:
       - postgres
