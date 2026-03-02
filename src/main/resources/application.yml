@@ -16,6 +16,12 @@ spring:
       mode: always
       schema-locations: classpath:schema.sql
 
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
 jwt:
   secret: ${JWT_SECRET:thisIsASecretKeyForLocalDevOnlyDoNotUseInProd!!}
-  expiration-ms: 86400000  # 24시간
+  expiration-ms: 1800000         # 30분 (Access Token)
+  refresh-expiration-ms: 604800000  # 7일 (Refresh Token)

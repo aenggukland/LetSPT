@@ -17,7 +17,32 @@ VALUES
 ON CONFLICT (role_name) DO NOTHING;
 
 -- =========================
--- 2. MEMBER (회원)
+-- 2. API_LOG (API 요청 로그)
+-- =========================
+CREATE TABLE IF NOT EXISTS api_log (
+    log_id      BIGSERIAL PRIMARY KEY,
+    username    VARCHAR(50),
+    method      VARCHAR(10)  NOT NULL,
+    url         VARCHAR(255) NOT NULL,
+    status      INT,
+    duration_ms BIGINT,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
+-- 3. REFRESH_TOKEN (리프레시 토큰)
+-- =========================
+CREATE TABLE IF NOT EXISTS refresh_token (
+    token_id   BIGSERIAL PRIMARY KEY,
+    username   VARCHAR(50)  NOT NULL UNIQUE,
+    token      VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP    NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_refresh_token_member FOREIGN KEY (username) REFERENCES member(username)
+);
+
+-- =========================
+-- 4. MEMBER (회원)
 -- =========================
 CREATE TABLE IF NOT EXISTS member (
     member_id           BIGSERIAL PRIMARY KEY,

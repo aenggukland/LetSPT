@@ -21,8 +21,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        String token = memberService.login(request);
-        return ResponseEntity.ok(Map.of("token", token));
+        return ResponseEntity.ok(memberService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> body) {
+        String newAccessToken = memberService.refresh(body.get("refreshToken"));
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body) {
+        memberService.logout(body.get("refreshToken"));
+        return ResponseEntity.ok().build();
     }
 
     // 인증 테스트용 엔드포인트
