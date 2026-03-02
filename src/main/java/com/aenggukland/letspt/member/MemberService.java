@@ -1,5 +1,7 @@
 package com.aenggukland.letspt.member;
 
+import com.aenggukland.letspt.exception.BusinessException;
+import com.aenggukland.letspt.exception.ErrorCode;
 import com.aenggukland.letspt.security.JwtProvider;
 import com.aenggukland.letspt.security.RefreshToken;
 import com.aenggukland.letspt.security.RefreshTokenMapper;
@@ -26,7 +28,7 @@ public class MemberService {
 
     public void register(RegisterRequest request) {
         if (memberMapper.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_USERNAME);
         }
 
         Member member = Member.builder()
@@ -41,10 +43,10 @@ public class MemberService {
 
     public Map<String, String> login(LoginRequest request) {
         Member member = memberMapper.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
         String roleName = MemberRole.fromRoleId(member.getRoleId()).name();
@@ -62,15 +64,15 @@ public class MemberService {
 
     public String refresh(String refreshToken) {
         RefreshToken rt = refreshTokenMapper.findByToken(refreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Refresh Token입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_TOKEN));
 
         if (rt.getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshTokenMapper.deleteByUsername(rt.getUsername());
-            throw new IllegalArgumentException("Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+            throw new BusinessException(ErrorCode.EXPIRED_TOKEN);
         }
 
         Member member = memberMapper.findByUsername(rt.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         String roleName = MemberRole.fromRoleId(member.getRoleId()).name();
         return jwtProvider.createToken(rt.getUsername(), roleName);
@@ -78,7 +80,7 @@ public class MemberService {
 
     public void logout(String refreshToken) {
         RefreshToken rt = refreshTokenMapper.findByToken(refreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Refresh Token입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_TOKEN));
         refreshTokenMapper.deleteByUsername(rt.getUsername());
     }
 }

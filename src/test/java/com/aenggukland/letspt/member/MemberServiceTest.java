@@ -1,5 +1,7 @@
 package com.aenggukland.letspt.member;
 
+import com.aenggukland.letspt.exception.BusinessException;
+import com.aenggukland.letspt.exception.ErrorCode;
 import com.aenggukland.letspt.security.JwtProvider;
 import com.aenggukland.letspt.security.RefreshToken;
 import com.aenggukland.letspt.security.RefreshTokenMapper;
@@ -71,8 +73,9 @@ class MemberServiceTest {
                 .thenReturn(Optional.of(Member.builder().username("testuser").build()));
 
         assertThatThrownBy(() -> memberService.register(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미 존재하는 아이디입니다.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.DUPLICATE_USERNAME));
     }
 
     // =====================
@@ -113,8 +116,9 @@ class MemberServiceTest {
         when(memberMapper.findByUsername("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> memberService.login(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("존재하지 않는 아이디입니다.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     @Test
@@ -133,8 +137,9 @@ class MemberServiceTest {
         when(memberMapper.findByUsername("testuser")).thenReturn(Optional.of(member));
 
         assertThatThrownBy(() -> memberService.login(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("비밀번호가 일치하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.INVALID_PASSWORD));
     }
 
     // =====================
@@ -170,8 +175,9 @@ class MemberServiceTest {
         when(refreshTokenMapper.findByToken("invalid-token")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> memberService.refresh("invalid-token"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("유효하지 않은 Refresh Token입니다.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.INVALID_TOKEN));
     }
 
     @Test
@@ -186,8 +192,9 @@ class MemberServiceTest {
         when(refreshTokenMapper.findByToken("expired-refresh-token")).thenReturn(Optional.of(rt));
 
         assertThatThrownBy(() -> memberService.refresh("expired-refresh-token"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.EXPIRED_TOKEN));
 
         verify(refreshTokenMapper).deleteByUsername("testuser");
     }
@@ -217,8 +224,9 @@ class MemberServiceTest {
         when(refreshTokenMapper.findByToken("invalid-token")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> memberService.logout("invalid-token"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("유효하지 않은 Refresh Token입니다.");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.INVALID_TOKEN));
     }
 
     // Lombok @Getter만 있으므로 테스트에서 리플렉션으로 필드 세팅
