@@ -17,7 +17,21 @@ VALUES
 ON CONFLICT (role_name) DO NOTHING;
 
 -- =========================
--- 2. REFRESH_TOKEN (리프레시 토큰)
+-- 2. ERROR_LOG (에러 로그)
+-- =========================
+CREATE TABLE IF NOT EXISTS error_log (
+    log_id      BIGSERIAL PRIMARY KEY,
+    error_code  VARCHAR(100),
+    method      VARCHAR(10),
+    url         VARCHAR(255),
+    username    VARCHAR(50),
+    message     TEXT,
+    stack_trace TEXT,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
+-- 3. REFRESH_TOKEN (리프레시 토큰)
 -- =========================
 CREATE TABLE IF NOT EXISTS refresh_token (
     token_id   BIGSERIAL PRIMARY KEY,
