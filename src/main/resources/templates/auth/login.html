@@ -211,12 +211,13 @@
 
             if (res.ok) {
                 const data = await res.json();
-                localStorage.setItem('token', data.token);
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
                 showAlert('로그인 성공! 메인 페이지로 이동합니다.', true);
                 setTimeout(() => location.href = '/main', 1200);
             } else {
-                const text = await res.text();
-                showAlert(text || '아이디 또는 비밀번호가 올바르지 않습니다.', false);
+                const data = await res.json();
+                showAlert(data.message || '아이디 또는 비밀번호가 올바르지 않습니다.', false);
             }
         } catch (e) {
             showAlert('서버에 연결할 수 없습니다.', false);
