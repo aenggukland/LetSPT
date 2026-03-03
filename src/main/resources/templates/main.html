@@ -70,6 +70,20 @@
 
         .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+        .mypage-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 0.4rem 0.85rem;
+            color: var(--accent);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .mypage-btn:hover { background: rgba(232,255,71,0.1); }
+
         main {
             max-width: 800px;
             margin: 4rem auto;
@@ -129,6 +143,7 @@
     <div class="logo">LETSPT</div>
     <div class="user-info">
         <span id="usernameDisplay"></span>
+        <button class="mypage-btn" onclick="location.href='/my-page'">내 정보</button>
         <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
 </header>
