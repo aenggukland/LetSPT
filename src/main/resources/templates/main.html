@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메인 — LetSPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --accent: #e8ff47;
+            --text: #f0f0f0;
+            --muted: #666;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 50% 40% at 50% 0%, rgba(232,255,71,0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.75rem;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.85rem;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        main {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            text-align: center;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            letter-spacing: 0.05em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .welcome span { color: var(--accent); }
+
+        .desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 3rem;
+        }
+
+        .token-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+        }
+
+        .token-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .token-value {
+            font-size: 0.75rem;
+            color: var(--accent);
+            word-break: break-all;
+            line-height: 1.6;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">LETSPT</div>
+    <div class="user-info">
+        <span id="usernameDisplay"></span>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<main>
+    <div class="welcome">안녕하세요,<br><span id="nameDisplay">회원</span>님!</div>
+    <div class="desc">LetSPT에 오신 것을 환영합니다.</div>
+
+    <div class="token-box">
+        <div class="token-label">현재 JWT 토큰</div>
+        <div class="token-value" id="tokenDisplay"></div>
+    </div>
+</main>
+
+<script>
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+        location.href = '/login';
+    } else {
+        // JWT payload 파싱
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('usernameDisplay').textContent = payload.sub;
+            document.getElementById('nameDisplay').textContent = payload.sub;
+            document.getElementById('tokenDisplay').textContent = token;
+        } catch (e) {
+            document.getElementById('tokenDisplay').textContent = token;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        location.href = '/login';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 — LetSPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --accent: #e8ff47;
+            --accent-dim: rgba(232,255,71,0.12);
+            --text: #f0f0f0;
+            --muted: #666;
+            --error: #ff5e5e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 30% 20%, rgba(232,255,71,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 60% at 80% 80%, rgba(232,255,71,0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.75rem;
+        }
+
+        .field { margin-bottom: 1.25rem; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        input::placeholder { color: #333; }
+
+        .btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.85rem;
+            background: var(--accent);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+
+        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .footer {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover { text-decoration: underline; }
+
+        .alert {
+            background: rgba(255,94,94,0.1);
+            border: 1px solid rgba(255,94,94,0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--error);
+            margin-bottom: 1.25rem;
+        }
+
+        .alert-success {
+            background: rgba(232,255,71,0.08);
+            border-color: rgba(232,255,71,0.3);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">LETSPT</div>
+    <div class="subtitle">Personal Training Management</div>
+
+    <div class="card">
+        <div class="card-title">로그인</div>
+
+        <div id="alert" style="display:none" class="alert"></div>
+
+        <div class="field">
+            <label>아이디</label>
+            <input type="text" id="username" placeholder="아이디를 입력하세요" onkeydown="if(event.key==='Enter') login()">
+        </div>
+        <div class="field">
+            <label>비밀번호</label>
+            <input type="password" id="password" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter') login()">
+        </div>
+
+        <button class="btn" onclick="login()">로그인</button>
+
+        <div class="footer">
+            계정이 없나요? <a href="/register">회원가입</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            showAlert('아이디와 비밀번호를 입력해주세요.', false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                showAlert('로그인 성공! 메인 페이지로 이동합니다.', true);
+                setTimeout(() => location.href = '/main', 1200);
+            } else {
+                const data = await res.json();
+                showAlert(data.message || '아이디 또는 비밀번호가 올바르지 않습니다.', false);
+            }
+        } catch (e) {
+            showAlert('서버에 연결할 수 없습니다.', false);
+        }
+    }
+
+    function showAlert(msg, success) {
+        const el = document.getElementById('alert');
+        el.textContent = msg;
+        el.className = 'alert' + (success ? ' alert-success' : '');
+        el.style.display = 'block';
+    }
+</script>
+</body>
+</html>

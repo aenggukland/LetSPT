@@ -2,7 +2,26 @@ spring:
   application:
     name: letSPT
 
+  docker:
+    compose:
+      enabled: false
+
   datasource:
     url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+jwt:
+  secret: ${JWT_SECRET:thisIsASecretKeyForLocalDevOnlyDoNotUseInProd!!}
+  expiration-ms: 1800000         # 30분 (Access Token)
+  refresh-expiration-ms: 604800000  # 7일 (Refresh Token)

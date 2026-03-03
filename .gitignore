@@ -39,3 +39,6 @@ out/
 .env
 
 docker/.env
+
+CLAUDE.md
+.claude/
