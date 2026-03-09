@@ -2,23 +2,15 @@ package com.aenggukland.letspt.member;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-public class PageController {
-
-    @GetMapping({"/", "/login"})
-    public String login() {
-        return "auth/login";
-    }
-
-    @GetMapping("/register")
-    public String register() {
-        return "auth/register";
-    }
+@RequestMapping("/member")
+public class MemberPageController {
 
     @GetMapping("/main")
     public String main() {
-        return "main";
+        return "member/main";
     }
 
     @GetMapping("/my-page")

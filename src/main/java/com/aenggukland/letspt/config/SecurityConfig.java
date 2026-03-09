@@ -26,10 +26,13 @@ public class SecurityConfig {
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/", "/login", "/register", "/main", "/my-page").permitAll()
+                    .requestMatchers("/", "/login", "/register").permitAll()
                     .requestMatchers("/api/auth/register", "/api/auth/login",
                             "/api/auth/refresh", "/api/auth/logout").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .requestMatchers("/member/**").hasRole("MEMBER")
+                    .requestMatchers("/admin/**").hasAnyRole("TRAINER", "MASTER")
+                    .requestMatchers("/master/**").hasRole("MASTER")
                     .requestMatchers("/api/admin/**").hasAnyRole("TRAINER", "MASTER")
                     .requestMatchers("/api/master/**").hasRole("MASTER")
                     .anyRequest().authenticated()
