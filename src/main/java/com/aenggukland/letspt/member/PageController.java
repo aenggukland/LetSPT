@@ -20,4 +20,9 @@ public class PageController {
     public String main() {
         return "main";
     }
+
+    @GetMapping("/my-page")
+    public String myPage() {
+        return "member/my-page";
+    }
 }

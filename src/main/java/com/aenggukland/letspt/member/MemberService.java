@@ -83,4 +83,37 @@ public class MemberService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_TOKEN));
         refreshTokenMapper.deleteByUsername(rt.getUsername());
     }
+
+    public MemberResponse getMyInfo(String username) {
+        Member member = memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return MemberResponse.from(member);
+    }
+
+    public void updateMyInfo(String username, MemberUpdateRequest request) {
+        memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        memberMapper.update(request, username);
+    }
+
+    public void changePassword(String username, PasswordChangeRequest request) {
+        Member member = memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+            throw new BusinessException(ErrorCode.WRONG_PASSWORD);
+        }
+        if (passwordEncoder.matches(request.getNewPassword(), member.getPassword())) {
+            throw new BusinessException(ErrorCode.SAME_PASSWORD);
+        }
+
+        memberMapper.updatePassword(username, passwordEncoder.encode(request.getNewPassword()));
+    }
+
+    public void withdraw(String username) {
+        memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        refreshTokenMapper.deleteByUsername(username);
+        memberMapper.softDelete(username);
+    }
 }

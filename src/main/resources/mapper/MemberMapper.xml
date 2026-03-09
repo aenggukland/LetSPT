@@ -17,4 +17,35 @@
         VALUES (#{roleId}, #{username}, #{name}, #{password})
     </insert>
 
+    <update id="update">
+        UPDATE member
+        SET name                = #{request.name},
+            gender              = #{request.gender},
+            age                 = #{request.age},
+            height              = #{request.height},
+            weight              = #{request.weight},
+            body_fat_percentage = #{request.bodyFatPercentage},
+            target_weight       = #{request.targetWeight},
+            fitness_goal        = #{request.fitnessGoal},
+            phone_number        = #{request.phoneNumber},
+            updated_at          = CURRENT_TIMESTAMP
+        WHERE username = #{username}
+          AND is_deleted = FALSE
+    </update>
+
+    <update id="updatePassword">
+        UPDATE member
+        SET password   = #{newEncodedPassword},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE username = #{username}
+          AND is_deleted = FALSE
+    </update>
+
+    <update id="softDelete" parameterType="string">
+        UPDATE member
+        SET is_deleted = TRUE,
+            deleted_at = CURRENT_TIMESTAMP
+        WHERE username = #{username}
+    </update>
+
 </mapper>

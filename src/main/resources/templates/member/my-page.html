@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내정보 — LetSPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --accent: #e8ff47;
+            --text: #f0f0f0;
+            --muted: #666;
+            --danger: #ff4757;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 50% 40% at 50% 0%, rgba(232,255,71,0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.75rem;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .btn-ghost {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.85rem;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+        main {
+            max-width: 720px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .field-grid.single { grid-template-columns: 1fr; }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field label {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .field input, .field select, .field textarea {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .field input[readonly] {
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .field textarea { resize: vertical; min-height: 70px; }
+
+        .field select option { background: #1a1a1a; }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 1.25rem;
+        }
+
+        .btn-primary:hover { opacity: 0.85; }
+
+        .btn-danger {
+            background: none;
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            color: var(--danger);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1.25rem;
+        }
+
+        .btn-danger:hover { background: rgba(255,71,87,0.1); }
+
+        .meta-row {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .meta-row span { display: flex; flex-direction: column; gap: 0.2rem; }
+        .meta-row strong { color: var(--text); font-size: 0.85rem; }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--accent);
+            color: #0a0a0a;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: var(--danger); color: #fff; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo" onclick="location.href='/main'">LETSPT</div>
+    <div class="header-nav">
+        <span id="usernameDisplay"></span>
+        <button class="btn-ghost" onclick="location.href='/main'">메인으로</button>
+        <button class="btn-ghost" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<main>
+    <div class="page-title">내 정보</div>
+
+    <!-- 계정 기본 정보 -->
+    <div class="section">
+        <div class="section-title">계정 정보</div>
+        <div class="meta-row" id="accountMeta">
+            <span><label>아이디</label><strong id="metaUsername">-</strong></span>
+            <span><label>가입일</label><strong id="metaCreatedAt">-</strong></span>
+            <span><label>마지막 로그인</label><strong id="metaLastLogin">-</strong></span>
+        </div>
+    </div>
+
+    <!-- 프로필 수정 -->
+    <div class="section">
+        <div class="section-title">프로필</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>이름</label>
+                <input type="text" id="name" placeholder="이름">
+            </div>
+            <div class="field">
+                <label>전화번호</label>
+                <input type="text" id="phoneNumber" placeholder="010-0000-0000">
+            </div>
+            <div class="field">
+                <label>성별</label>
+                <select id="gender">
+                    <option value="">선택</option>
+                    <option value="남성">남성</option>
+                    <option value="여성">여성</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>나이</label>
+                <input type="number" id="age" placeholder="나이">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="updateProfile()">프로필 저장</button>
+    </div>
+
+    <!-- 신체 정보 수정 -->
+    <div class="section">
+        <div class="section-title">신체 정보</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>키 (cm)</label>
+                <input type="number" step="0.1" id="height" placeholder="170.0">
+            </div>
+            <div class="field">
+                <label>현재 몸무게 (kg)</label>
+                <input type="number" step="0.1" id="weight" placeholder="70.0">
+            </div>
+            <div class="field">
+                <label>체지방률 (%)</label>
+                <input type="number" step="0.1" id="bodyFatPercentage" placeholder="20.0">
+            </div>
+            <div class="field">
+                <label>목표 몸무게 (kg)</label>
+                <input type="number" step="0.1" id="targetWeight" placeholder="65.0">
+            </div>
+        </div>
+        <div class="field-grid single" style="margin-top:1rem">
+            <div class="field">
+                <label>운동 목표</label>
+                <textarea id="fitnessGoal" placeholder="예: 체중 감량, 근력 향상, 체형 교정 등"></textarea>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="updateBody()">신체정보 저장</button>
+    </div>
+
+    <!-- 비밀번호 변경 -->
+    <div class="section">
+        <div class="section-title">비밀번호 변경</div>
+        <div class="field-grid single">
+            <div class="field">
+                <label>현재 비밀번호</label>
+                <input type="password" id="currentPassword" placeholder="현재 비밀번호">
+            </div>
+            <div class="field">
+                <label>새 비밀번호</label>
+                <input type="password" id="newPassword" placeholder="새 비밀번호">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="changePassword()">비밀번호 변경</button>
+    </div>
+
+    <!-- 회원 탈퇴 -->
+    <div class="section">
+        <div class="section-title">계정 관리</div>
+        <button class="btn-danger" onclick="confirmWithdraw()">회원 탈퇴</button>
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const token = localStorage.getItem('accessToken');
+    if (!token) location.href = '/login';
+
+    function authHeaders() {
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+    }
+
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (isError ? ' error' : '');
+        setTimeout(() => t.className = 'toast', 2500);
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '-';
+        return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
+    // 내 정보 로드
+    async function loadMyInfo() {
+        const res = await fetch('/api/member/me', { headers: authHeaders() });
+        if (res.status === 401) { location.href = '/login'; return; }
+        const data = await res.json();
+
+        document.getElementById('usernameDisplay').textContent = data.username;
+        document.getElementById('metaUsername').textContent = data.username;
+        document.getElementById('metaCreatedAt').textContent = formatDate(data.createdAt);
+        document.getElementById('metaLastLogin').textContent = formatDate(data.lastLoginAt);
+
+        document.getElementById('name').value             = data.name ?? '';
+        document.getElementById('phoneNumber').value      = data.phoneNumber ?? '';
+        document.getElementById('gender').value           = data.gender ?? '';
+        document.getElementById('age').value              = data.age ?? '';
+        document.getElementById('height').value           = data.height ?? '';
+        document.getElementById('weight').value           = data.weight ?? '';
+        document.getElementById('bodyFatPercentage').value = data.bodyFatPercentage ?? '';
+        document.getElementById('targetWeight').value     = data.targetWeight ?? '';
+        document.getElementById('fitnessGoal').value      = data.fitnessGoal ?? '';
+    }
+
+    // 프로필 저장 (이름, 전화번호, 성별, 나이)
+    async function updateProfile() {
+        const body = buildUpdateBody();
+        const res = await fetch('/api/member/me', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
+        });
+        res.ok ? showToast('프로필이 저장되었습니다.') : showToast('저장 실패', true);
+    }
+
+    // 신체정보 저장 (키, 몸무게, 체지방률, 목표체중, 운동목표)
+    async function updateBody() {
+        const body = buildUpdateBody();
+        const res = await fetch('/api/member/me', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
+        });
+        res.ok ? showToast('신체정보가 저장되었습니다.') : showToast('저장 실패', true);
+    }
+
+    function buildUpdateBody() {
+        return {
+            name:               document.getElementById('name').value || null,
+            phoneNumber:        document.getElementById('phoneNumber').value || null,
+            gender:             document.getElementById('gender').value || null,
+            age:                Number(document.getElementById('age').value) || null,
+            height:             Number(document.getElementById('height').value) || null,
+            weight:             Number(document.getElementById('weight').value) || null,
+            bodyFatPercentage:  Number(document.getElementById('bodyFatPercentage').value) || null,
+            targetWeight:       Number(document.getElementById('targetWeight').value) || null,
+            fitnessGoal:        document.getElementById('fitnessGoal').value || null,
+        };
+    }
+
+    // 비밀번호 변경
+    async function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword     = document.getElementById('newPassword').value;
+        if (!currentPassword || !newPassword) { showToast('비밀번호를 입력해주세요.', true); return; }
+
+        const res = await fetch('/api/member/me/password', {
+            method: 'PUT', headers: authHeaders(),
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        if (res.ok) {
+            showToast('비밀번호가 변경되었습니다.');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+        } else {
+            const data = await res.json();
+            showToast(data.message ?? '변경 실패', true);
+        }
+    }
+
+    // 회원 탈퇴
+    async function confirmWithdraw() {
+        if (!confirm('정말 탈퇴하시겠습니까?\n탈퇴 후 모든 데이터는 복구되지 않습니다.')) return;
+
+        const res = await fetch('/api/member/me', { method: 'DELETE', headers: authHeaders() });
+        if (res.ok) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            location.href = '/login';
+        } else {
+            showToast('탈퇴 처리 중 오류가 발생했습니다.', true);
+        }
+    }
+
+    function logout() {
+        const refreshToken = localStorage.getItem('refreshToken');
+        fetch('/api/auth/logout', {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify({ refreshToken })
+        }).finally(() => {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            location.href = '/login';
+        });
+    }
+
+    loadMyInfo();
+</script>
+</body>
+</html>
