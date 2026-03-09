@@ -42,6 +42,12 @@ public class MemberController {
         return ResponseEntity.ok(Map.of("profileImageUrl", imageUrl));
     }
 
+    @DeleteMapping("/me/profile-image")
+    public ResponseEntity<Void> deleteProfileImage(@RequestAttribute("username") String username) {
+        memberService.deleteProfileImage(username);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdraw(@RequestAttribute("username") String username) {
         memberService.withdraw(username);
