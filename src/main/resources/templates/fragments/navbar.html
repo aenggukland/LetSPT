@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <th:block th:fragment="navbarStyles">
+        <style>
+            .site-header {
+                display: flex;
+                align-items: center;
+                padding: 0 2rem;
+                border-bottom: 1px solid var(--border);
+                height: 60px;
+                position: relative;
+                z-index: 200;
+            }
+
+            .logo {
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 1.75rem;
+                letter-spacing: 0.08em;
+                color: var(--accent);
+                text-decoration: none;
+                margin-right: 2rem;
+                flex-shrink: 0;
+            }
+
+            .nav-menu {
+                display: flex;
+                align-items: stretch;
+                height: 100%;
+            }
+
+            .nav-item {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                padding: 0 1.25rem;
+                height: 100%;
+                font-size: 0.875rem;
+                color: var(--muted);
+                text-decoration: none;
+                transition: color 0.2s;
+                white-space: nowrap;
+                border-left: 1px solid var(--border);
+            }
+
+            .nav-menu .nav-item:last-child .nav-link {
+                border-right: 1px solid var(--border);
+            }
+
+            .nav-item:hover > .nav-link {
+                color: var(--accent);
+            }
+
+            .dropdown-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: -1px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-top: none;
+                border-radius: 0 0 8px 8px;
+                min-width: 160px;
+                z-index: 300;
+                overflow: hidden;
+            }
+
+            .nav-item:hover > .dropdown-menu {
+                display: block;
+            }
+
+            .dropdown-menu:empty {
+                display: none !important;
+            }
+
+            .dropdown-item {
+                display: block;
+                padding: 0.75rem 1.25rem;
+                font-size: 0.85rem;
+                color: var(--muted);
+                text-decoration: none;
+                transition: background 0.15s, color 0.15s;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+            .dropdown-item:hover {
+                background: rgba(232, 255, 71, 0.05);
+                color: var(--text);
+            }
+
+            .nav-right {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-left: auto;
+                font-size: 0.85rem;
+                color: var(--muted);
+            }
+
+            .nav-logout-btn {
+                background: none;
+                border: none;
+                padding: 0;
+                color: var(--muted);
+                font-family: 'Noto Sans KR', sans-serif;
+                font-size: 0.875rem;
+                cursor: pointer;
+                text-decoration: underline;
+                transition: color 0.2s;
+            }
+
+            .nav-logout-btn:hover {
+                color: var(--accent);
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<header class="site-header" th:fragment="navbar">
+    <a class="logo" href="/main">LETSPT</a>
+    <nav class="nav-menu">
+        <div class="nav-item">
+            <a class="nav-link" href="#">트레이너 정보</a>
+            <div class="dropdown-menu">
+                <!-- 추후 추가 -->
+            </div>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="#">채팅방</a>
+            <div class="dropdown-menu">
+                <!-- 추후 추가 -->
+            </div>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="#">게시판</a>
+            <div class="dropdown-menu">
+                <!-- 추후 추가 -->
+            </div>
+        </div>
+    </nav>
+    <div class="nav-right">
+        <span id="navUsername"></span>
+        <button class="nav-logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<th:block th:fragment="navbarScript">
+    <script>
+        (function () {
+            const token = localStorage.getItem('accessToken');
+            if (!token) { location.href = '/login'; return; }
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const el = document.getElementById('navUsername');
+                if (el) el.textContent = payload.sub;
+            } catch (e) {}
+        })();
+
+        function logout() {
+            const token = localStorage.getItem('accessToken');
+            const refreshToken = localStorage.getItem('refreshToken');
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ refreshToken })
+            }).finally(() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                location.href = '/login';
+            });
+        }
+    </script>
+</th:block>
+
+</body>
+</html>

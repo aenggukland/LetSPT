@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내정보 — LetSPT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <th:block th:replace="~{fragments/navbar :: navbarStyles}"></th:block>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,44 +34,6 @@
             background: radial-gradient(ellipse 50% 40% at 50% 0%, rgba(232,255,71,0.05) 0%, transparent 60%);
             pointer-events: none;
         }
-
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.25rem 2rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.75rem;
-            letter-spacing: 0.08em;
-            color: var(--accent);
-            cursor: pointer;
-        }
-
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        .btn-ghost {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.4rem 0.85rem;
-            color: var(--muted);
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: border-color 0.2s, color 0.2s;
-        }
-
-        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
         main {
             max-width: 720px;
@@ -217,14 +180,7 @@
 </head>
 <body>
 
-<header>
-    <div class="logo" onclick="location.href='/main'">LETSPT</div>
-    <div class="header-nav">
-        <span id="usernameDisplay"></span>
-        <button class="btn-ghost" onclick="location.href='/main'">메인으로</button>
-        <button class="btn-ghost" onclick="logout()">로그아웃</button>
-    </div>
-</header>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
 
 <main>
     <div class="page-title">내 정보</div>
@@ -322,9 +278,9 @@
 
 <div class="toast" id="toast"></div>
 
+<th:block th:replace="~{fragments/navbar :: navbarScript}"></th:block>
 <script>
     const token = localStorage.getItem('accessToken');
-    if (!token) location.href = '/login';
 
     function authHeaders() {
         return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
@@ -348,7 +304,7 @@
         if (res.status === 401) { location.href = '/login'; return; }
         const data = await res.json();
 
-        document.getElementById('usernameDisplay').textContent = data.username;
+        document.getElementById('navUsername').textContent = data.username;
         document.getElementById('metaUsername').textContent = data.username;
         document.getElementById('metaCreatedAt').textContent = formatDate(data.createdAt);
         document.getElementById('metaLastLogin').textContent = formatDate(data.lastLoginAt);
@@ -429,18 +385,6 @@
         } else {
             showToast('탈퇴 처리 중 오류가 발생했습니다.', true);
         }
-    }
-
-    function logout() {
-        const refreshToken = localStorage.getItem('refreshToken');
-        fetch('/api/auth/logout', {
-            method: 'POST', headers: authHeaders(),
-            body: JSON.stringify({ refreshToken })
-        }).finally(() => {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            location.href = '/login';
-        });
     }
 
     loadMyInfo();
