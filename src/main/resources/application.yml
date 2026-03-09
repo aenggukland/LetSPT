@@ -25,3 +25,10 @@ jwt:
   secret: ${JWT_SECRET:thisIsASecretKeyForLocalDevOnlyDoNotUseInProd!!}
   expiration-ms: 1800000         # 30분 (Access Token)
   refresh-expiration-ms: 604800000  # 7일 (Refresh Token)
+
+upload:
+  profile-dir: ${UPLOAD_DIR:uploads/profile}
+
+spring.servlet.multipart:
+  max-file-size: 5MB
+  max-request-size: 10MB

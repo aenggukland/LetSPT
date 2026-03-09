@@ -1,13 +1,17 @@
 package com.aenggukland.letspt.member;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Member {
 
     private Long memberId;
@@ -28,4 +32,5 @@ public class Member {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
     private LocalDateTime lastLoginAt;
+    private String profileImageUrl;
 }

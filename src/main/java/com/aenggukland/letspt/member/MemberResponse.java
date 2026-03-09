@@ -22,6 +22,7 @@ public class MemberResponse {
     private String phoneNumber;
     private LocalDateTime createdAt;
     private LocalDateTime lastLoginAt;
+    private String profileImageUrl;
 
     public static MemberResponse from(Member member) {
         return MemberResponse.builder()
@@ -38,6 +39,7 @@ public class MemberResponse {
                 .phoneNumber(member.getPhoneNumber())
                 .createdAt(member.getCreatedAt())
                 .lastLoginAt(member.getLastLoginAt())
+                .profileImageUrl(member.getProfileImageUrl())
                 .build();
     }
 }

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aenggukland.letspt.board.BoardMapper">
+
+    <resultMap id="boardResultMap" type="com.aenggukland.letspt.board.Board">
+        <id     property="boardId"   column="board_id"/>
+        <result property="imageId"   column="image_id"/>
+        <result property="authorId"  column="author_id"/>
+        <result property="memberId"  column="member_id"/>
+        <result property="category"  column="category"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"
+                javaType="com.aenggukland.letspt.board.BoardCategory"/>
+        <result property="title"     column="title"/>
+        <result property="content"   column="content"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="boardResultMap">
+        SELECT * FROM board
+        WHERE board_id = #{boardId}
+          AND is_deleted = FALSE
+    </select>
+
+    <!-- my-page: LESSON 최근 N건 (대상 회원 기준) -->
+    <select id="findRecentLessonsByMemberId"
+            resultType="com.aenggukland.letspt.board.BoardSummary">
+        SELECT board_id, title, created_at
+        FROM board
+        WHERE category = 'LESSON'
+          AND member_id = #{memberId}
+          AND is_deleted = FALSE
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- my-page: DIET/EXERCISE 최근 N건 (작성자 기준) -->
+    <select id="findRecentByAuthor"
+            resultType="com.aenggukland.letspt.board.BoardSummary">
+        SELECT board_id, title, created_at
+        FROM board
+        WHERE category = #{category}
+          AND author_id = #{authorId}
+          AND is_deleted = FALSE
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 전체 목록: LESSON (대상 회원 기준) -->
+    <select id="findAllLessonsByMemberId" parameterType="long" resultMap="boardResultMap">
+        SELECT * FROM board
+        WHERE category = 'LESSON'
+          AND member_id = #{memberId}
+          AND is_deleted = FALSE
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 전체 목록: DIET/EXERCISE (작성자 기준) -->
+    <select id="findAllByAuthor" resultMap="boardResultMap">
+        SELECT * FROM board
+        WHERE category = #{category}
+          AND author_id = #{authorId}
+          AND is_deleted = FALSE
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="save" parameterType="com.aenggukland.letspt.board.Board"
+            useGeneratedKeys="true" keyProperty="boardId">
+        INSERT INTO board (image_id, author_id, member_id, category, title, content)
+        VALUES (#{imageId}, #{authorId}, #{memberId}, #{category}, #{title}, #{content})
+    </insert>
+
+    <update id="update">
+        UPDATE board
+        <set>
+            <if test="request.title != null">title = #{request.title},</if>
+            <if test="request.content != null">content = #{request.content},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE board_id = #{boardId}
+          AND is_deleted = FALSE
+    </update>
+
+    <update id="softDelete" parameterType="long">
+        UPDATE board
+        SET is_deleted = TRUE,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE board_id = #{boardId}
+    </update>
+
+</mapper>

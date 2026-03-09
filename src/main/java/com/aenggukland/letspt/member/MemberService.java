@@ -9,8 +9,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +32,9 @@ public class MemberService {
 
     @Value("${jwt.refresh-expiration-ms:604800000}")
     private long refreshExpirationMs;
+
+    @Value("${upload.profile-dir:uploads/profile}")
+    private String profileUploadDir;
 
     public void register(RegisterRequest request) {
         if (memberMapper.findByUsername(request.getUsername()).isPresent()) {
@@ -108,6 +118,31 @@ public class MemberService {
         }
 
         memberMapper.updatePassword(username, passwordEncoder.encode(request.getNewPassword()));
+    }
+
+    public String uploadProfileImage(String username, MultipartFile file) {
+        memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
+        String savedFileName = UUID.randomUUID() + (ext != null ? "." + ext : "");
+        Path savePath = Paths.get(profileUploadDir, savedFileName);
+
+        try {
+            Files.createDirectories(savePath.getParent());
+            file.transferTo(savePath.toFile());
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+
+        String imageUrl = "/uploads/profile/" + savedFileName;
+        memberMapper.updateProfileImage(username, imageUrl);
+        return imageUrl;
     }
 
     public void withdraw(String username) {
