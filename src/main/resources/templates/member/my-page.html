@@ -28,25 +28,35 @@
             min-height: 100vh;
         }
 
-        .page-layout {
-            display: flex;
-            gap: 1.5rem;
-            max-width: 1200px;
+        .page-wrap {
+            max-width: 1600px;
             margin: 2rem auto;
             padding: 0 2rem;
-            align-items: flex-start;
+        }
+
+        /* 상단 영역: 챗봇 배너 absolute + 프로필 중앙 */
+        .page-top {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 하단: 카드 + 탈퇴 전체 너비 */
+        .page-bottom {
+            width: 100%;
         }
 
         /* ── AI 챗봇 배너 ── */
         .chatbot-banner {
             width: 220px;
-            flex-shrink: 0;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border: 1px solid #2a2a4a;
             border-radius: 12px;
             padding: 1.25rem;
-            position: sticky;
-            top: 80px;
+            position: absolute;
+            left: 0;
+            top: 0;
         }
 
         .chatbot-banner .badge {
@@ -95,9 +105,6 @@
 
         .chatbot-banner .btn-go:hover { opacity: 0.85; }
 
-        /* ── 메인 컨텐츠 ── */
-        .content-area { flex: 1; min-width: 0; }
-
         /* ── 프로필 섹션 ── */
         .profile-section {
             background: var(--surface);
@@ -108,6 +115,7 @@
             flex-direction: column;
             align-items: center;
             margin-bottom: 1.5rem;
+            width: 360px;
         }
 
         .profile-image-wrap {
@@ -267,6 +275,13 @@
             display: flex;
             justify-content: space-between;
             gap: 0.5rem;
+            overflow: hidden;
+        }
+
+        .board-card ul li a span:first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .board-card ul li a:hover { color: var(--accent); }
@@ -326,7 +341,10 @@
 
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<div class="page-layout">
+<div class="page-wrap">
+
+    <!-- 상단: 챗봇 배너 + 프로필 -->
+    <div class="page-top">
 
     <!-- AI 챗봇 배너 -->
     <aside class="chatbot-banner">
@@ -335,9 +353,6 @@
         <p>오피지지 AI챗봇에서 LetSPT의 궁금한 모든 것을 물어보세요!</p>
         <a href="#" class="btn-go">바로가기 &rsaquo;</a>
     </aside>
-
-    <!-- 메인 컨텐츠 -->
-    <div class="content-area">
 
         <!-- 프로필 -->
         <section class="profile-section">
@@ -392,7 +407,10 @@
             <a href="/member/my-page/edit" class="btn-edit">정보수정</a>
         </section>
 
-        <!-- 게시글 3단 카드 -->
+    </div><!-- /.page-top -->
+
+    <!-- 하단: 게시글 3단 카드 (전체 너비) -->
+    <div class="page-bottom">
         <div style="text-align:right; font-size:0.75rem; color:var(--muted); margin-bottom:0.5rem;">
             ※ 모든 게시글은 최신순으로 정렬됩니다.
         </div>
@@ -459,8 +477,9 @@
             <a onclick="confirmWithdraw()">탈퇴하기</a>
         </div>
 
-    </div>
-</div>
+    </div><!-- /.page-bottom -->
+
+</div><!-- /.page-wrap -->
 
 <div class="toast" id="toast"></div>
 
