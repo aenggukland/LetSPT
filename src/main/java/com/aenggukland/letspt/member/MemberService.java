@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -131,11 +132,11 @@ public class MemberService {
 
         String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
         String savedFileName = UUID.randomUUID() + (ext != null ? "." + ext : "");
-        Path savePath = Paths.get(profileUploadDir, savedFileName);
+        Path savePath = Paths.get(profileUploadDir, savedFileName).toAbsolutePath();
 
         try {
             Files.createDirectories(savePath.getParent());
-            file.transferTo(savePath.toFile());
+            Files.copy(file.getInputStream(), savePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
@@ -143,6 +144,12 @@ public class MemberService {
         String imageUrl = "/uploads/profile/" + savedFileName;
         memberMapper.updateProfileImage(username, imageUrl);
         return imageUrl;
+    }
+
+    public void deleteProfileImage(String username) {
+        memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        memberMapper.updateProfileImage(username, null);
     }
 
     public void withdraw(String username) {

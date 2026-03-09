@@ -184,6 +184,43 @@
 
         .profile-edit-btn:hover svg { stroke: var(--accent); }
 
+        /* 이미지 편집 팝업 */
+        .profile-img-popup {
+            display: none;
+            position: absolute;
+            bottom: -6px;
+            right: -90px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            min-width: 100px;
+        }
+
+        .profile-img-popup.open { display: block; }
+
+        .profile-img-popup button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.65rem 1rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .profile-img-popup button:hover { background: rgba(255,255,255,0.05); }
+        .profile-img-popup button:first-child { border-bottom: 1px solid var(--border); }
+        .profile-img-popup button.danger { color: var(--danger); }
+
         .profile-name {
             font-size: 1.4rem;
             font-weight: 700;
@@ -370,12 +407,16 @@
                     </svg>
                 </div>
 
-                <label for="profileImageInput" class="profile-edit-btn" title="이미지 변경">
+                <button type="button" class="profile-edit-btn" onclick="toggleImgPopup(event)" title="이미지 편집">
                     <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
-                </label>
+                </button>
+                <div id="imgPopup" class="profile-img-popup">
+                    <button type="button" onclick="openFileInput()">✏ 편집</button>
+                    <button type="button" class="danger" onclick="deleteProfileImage()">✕ 삭제</button>
+                </div>
                 <input type="file" id="profileImageInput" accept="image/*" style="display:none"
                        onchange="uploadProfileImage(this)">
             </div>
@@ -497,10 +538,80 @@
         setTimeout(() => t.className = 'toast', 2500);
     }
 
+    function toggleImgPopup(e) {
+        e.stopPropagation();
+        document.getElementById('imgPopup').classList.toggle('open');
+    }
+
+    function openFileInput() {
+        document.getElementById('imgPopup').classList.remove('open');
+        document.getElementById('profileImageInput').click();
+    }
+
+    async function deleteProfileImage() {
+        document.getElementById('imgPopup').classList.remove('open');
+        try {
+            const res = await fetch('/api/member/me/profile-image', {
+                method: 'DELETE',
+                headers: authHeaders()
+            });
+            if (res.ok) {
+                // 이미지 숨기고 플레이스홀더 표시
+                const img = document.getElementById('profileImg');
+                if (img) img.style.display = 'none';
+
+                let placeholder = document.getElementById('profilePlaceholder');
+                if (!placeholder) {
+                    placeholder = document.createElement('div');
+                    placeholder.id = 'profilePlaceholder';
+                    placeholder.className = 'profile-avatar-placeholder';
+                    placeholder.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>`;
+                    document.querySelector('.profile-image-wrap').prepend(placeholder);
+                } else {
+                    placeholder.style.display = 'flex';
+                }
+                showToast('프로필 이미지가 삭제되었습니다.');
+            } else {
+                showToast('삭제에 실패했습니다.', true);
+            }
+        } catch (e) {
+            showToast('서버에 연결할 수 없습니다.', true);
+        }
+    }
+
+    // 팝업 외부 클릭 시 닫기
+    document.addEventListener('click', () => {
+        document.getElementById('imgPopup').classList.remove('open');
+    });
+
     async function uploadProfileImage(input) {
         if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+
+        // 파일 선택 즉시 동그라미에 미리보기
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const placeholder = document.getElementById('profilePlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
+
+            let img = document.getElementById('profileImg');
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'profileImg';
+                img.className = 'profile-avatar';
+                img.alt = '프로필 이미지';
+                document.querySelector('.profile-image-wrap').prepend(img);
+            }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // 서버 업로드
         const formData = new FormData();
-        formData.append('file', input.files[0]);
+        formData.append('file', file);
 
         try {
             const res = await fetch('/api/member/me/profile-image', {
@@ -509,21 +620,6 @@
                 body: formData
             });
             if (res.ok) {
-                const data = await res.json();
-
-                // 플레이스홀더 숨기고 img 태그로 교체
-                const placeholder = document.getElementById('profilePlaceholder');
-                if (placeholder) placeholder.style.display = 'none';
-
-                let img = document.getElementById('profileImg');
-                if (!img) {
-                    img = document.createElement('img');
-                    img.id = 'profileImg';
-                    img.className = 'profile-avatar';
-                    img.alt = '프로필 이미지';
-                    document.querySelector('.profile-image-wrap').prepend(img);
-                }
-                img.src = data.profileImageUrl;
                 showToast('프로필 이미지가 변경되었습니다.');
             } else {
                 showToast('이미지 업로드에 실패했습니다.', true);
