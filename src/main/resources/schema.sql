@@ -43,7 +43,17 @@ CREATE TABLE IF NOT EXISTS refresh_token (
 );
 
 -- =========================
--- 3. MEMBER (회원)
+-- 3. IMAGE (파일/이미지)
+-- =========================
+CREATE TABLE IF NOT EXISTS image (
+    image_id   BIGSERIAL PRIMARY KEY,
+    file_name  VARCHAR(255) NOT NULL,
+    file_path  VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
+-- 4. MEMBER (회원)
 -- =========================
 CREATE TABLE IF NOT EXISTS member (
     member_id           BIGSERIAL PRIMARY KEY,
@@ -65,4 +75,26 @@ CREATE TABLE IF NOT EXISTS member (
     deleted_at          TIMESTAMP,
     last_login_at       TIMESTAMP,
     CONSTRAINT fk_member_role FOREIGN KEY (role_id) REFERENCES role(role_id)
+);
+
+ALTER TABLE member
+    ADD COLUMN IF NOT EXISTS profile_image_url VARCHAR(500);
+
+-- =========================
+-- 5. BOARD (게시판 통합)
+-- =========================
+CREATE TABLE IF NOT EXISTS board (
+    board_id   BIGSERIAL PRIMARY KEY,
+    image_id   BIGINT,
+    author_id  BIGINT NOT NULL,
+    member_id  BIGINT,
+    category   VARCHAR(20) NOT NULL CHECK (category IN ('LESSON', 'DIET', 'EXERCISE')),
+    title      VARCHAR(200) NOT NULL,
+    content    TEXT,
+    is_deleted BOOLEAN   DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_board_image  FOREIGN KEY (image_id)  REFERENCES image(image_id),
+    CONSTRAINT fk_board_author FOREIGN KEY (author_id) REFERENCES member(member_id),
+    CONSTRAINT fk_board_member FOREIGN KEY (member_id) REFERENCES member(member_id)
 );

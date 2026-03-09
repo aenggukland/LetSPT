@@ -27,6 +27,9 @@
                 display: flex;
                 align-items: stretch;
                 height: 100%;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
             }
 
             .nav-item {
@@ -41,7 +44,7 @@
                 padding: 0 1.25rem;
                 height: 100%;
                 font-size: 0.875rem;
-                color: var(--muted);
+                color: #ccc;
                 text-decoration: none;
                 transition: color 0.2s;
                 white-space: nowrap;
@@ -121,6 +124,17 @@
             .nav-logout-btn:hover {
                 color: var(--accent);
             }
+
+            .nav-username-link {
+                color: var(--muted);
+                text-decoration: none;
+                font-size: 0.875rem;
+                transition: color 0.2s;
+            }
+
+            .nav-username-link:hover {
+                color: var(--accent);
+            }
         </style>
     </th:block>
 </head>
@@ -149,7 +163,7 @@
         </div>
     </nav>
     <div class="nav-right">
-        <span id="navUsername"></span>
+        <a id="navUsername" href="/member/my-page" class="nav-username-link"></a>
         <button class="nav-logout-btn" onclick="logout()">로그아웃</button>
     </div>
 </header>

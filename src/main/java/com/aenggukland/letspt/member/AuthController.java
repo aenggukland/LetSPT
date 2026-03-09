@@ -1,5 +1,7 @@
 package com.aenggukland.letspt.member;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +22,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(memberService.login(request));
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request,
+                                                     HttpServletResponse response) {
+        Map<String, String> tokens = memberService.login(request);
+
+        Cookie cookie = new Cookie("accessToken", tokens.get("accessToken"));
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60); // 1시간
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/refresh")

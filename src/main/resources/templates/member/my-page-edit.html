@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보수정 — LetSPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <th:block th:replace="~{fragments/navbar :: navbarStyles}"></th:block>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --accent: #e8ff47;
+            --accent-dim: rgba(232,255,71,0.12);
+            --text: #f0f0f0;
+            --muted: #666;
+            --danger: #ff4757;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .field-grid.single { grid-template-columns: 1fr; }
+
+        .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+        .field label {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .field input, .field select, .field textarea {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .field textarea { resize: vertical; min-height: 70px; }
+        .field select option { background: #1a1a1a; }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 1.25rem;
+        }
+
+        .btn-primary:hover { opacity: 0.85; }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.7rem 1.5rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-back:hover { border-color: var(--text); color: var(--text); }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--accent);
+            color: #0a0a0a;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: var(--danger); color: #fff; }
+    </style>
+</head>
+<body>
+
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main>
+    <div class="page-title">정보 수정</div>
+
+    <!-- 프로필 정보 -->
+    <div class="section">
+        <div class="section-title">프로필</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>이름</label>
+                <input type="text" id="name" th:value="${member.name}" placeholder="이름">
+            </div>
+            <div class="field">
+                <label>전화번호</label>
+                <input type="text" id="phoneNumber" th:value="${member.phoneNumber}" placeholder="010-0000-0000">
+            </div>
+            <div class="field">
+                <label>성별</label>
+                <select id="gender">
+                    <option value="">선택</option>
+                    <option value="남성" th:selected="${member.gender == '남성'}">남성</option>
+                    <option value="여성" th:selected="${member.gender == '여성'}">여성</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>나이</label>
+                <input type="number" id="age" th:value="${member.age}" placeholder="나이">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="updateProfile()">프로필 저장</button>
+    </div>
+
+    <!-- 신체 정보 -->
+    <div class="section">
+        <div class="section-title">신체 정보</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>키 (cm)</label>
+                <input type="number" step="0.1" id="height" th:value="${member.height}" placeholder="170.0">
+            </div>
+            <div class="field">
+                <label>현재 몸무게 (kg)</label>
+                <input type="number" step="0.1" id="weight" th:value="${member.weight}" placeholder="70.0">
+            </div>
+            <div class="field">
+                <label>체지방률 (%)</label>
+                <input type="number" step="0.1" id="bodyFatPercentage" th:value="${member.bodyFatPercentage}" placeholder="20.0">
+            </div>
+            <div class="field">
+                <label>목표 몸무게 (kg)</label>
+                <input type="number" step="0.1" id="targetWeight" th:value="${member.targetWeight}" placeholder="65.0">
+            </div>
+        </div>
+        <div class="field-grid single" style="margin-top:1rem">
+            <div class="field">
+                <label>운동 목표</label>
+                <textarea id="fitnessGoal" th:text="${member.fitnessGoal}" placeholder="예: 체중 감량, 근력 향상, 체형 교정 등"></textarea>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="updateBody()">신체정보 저장</button>
+    </div>
+
+    <!-- 비밀번호 변경 -->
+    <div class="section">
+        <div class="section-title">비밀번호 변경</div>
+        <div class="field-grid single">
+            <div class="field">
+                <label>현재 비밀번호</label>
+                <input type="password" id="currentPassword" placeholder="현재 비밀번호">
+            </div>
+            <div class="field">
+                <label>새 비밀번호</label>
+                <input type="password" id="newPassword" placeholder="새 비밀번호">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="changePassword()">비밀번호 변경</button>
+    </div>
+
+    <a href="/member/my-page" class="btn-back">← 내 정보로 돌아가기</a>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<th:block th:replace="~{fragments/navbar :: navbarScript}"></th:block>
+<script>
+    function authHeaders() {
+        const token = localStorage.getItem('accessToken');
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+    }
+
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (isError ? ' error' : '');
+        setTimeout(() => t.className = 'toast', 2500);
+    }
+
+    function numOrNull(id) {
+        const v = document.getElementById(id).value;
+        return v === '' ? null : Number(v);
+    }
+
+    async function updateProfile() {
+        const res = await fetch('/api/member/me', {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                name:        document.getElementById('name').value || null,
+                phoneNumber: document.getElementById('phoneNumber').value || null,
+                gender:      document.getElementById('gender').value || null,
+                age:         numOrNull('age')
+            })
+        });
+        res.ok ? showToast('프로필이 저장되었습니다.') : showToast('저장 실패', true);
+    }
+
+    async function updateBody() {
+        const res = await fetch('/api/member/me', {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                height:             numOrNull('height'),
+                weight:             numOrNull('weight'),
+                bodyFatPercentage:  numOrNull('bodyFatPercentage'),
+                targetWeight:       numOrNull('targetWeight'),
+                fitnessGoal:        document.getElementById('fitnessGoal').value || null
+            })
+        });
+        if (res.ok) {
+            showToast('신체정보가 저장되었습니다.');
+            setTimeout(() => location.href = '/member/my-page', 1500);
+        } else {
+            showToast('저장 실패', true);
+        }
+    }
+
+    async function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword     = document.getElementById('newPassword').value;
+        if (!currentPassword || !newPassword) { showToast('비밀번호를 입력해주세요.', true); return; }
+
+        const res = await fetch('/api/member/me/password', {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        if (res.ok) {
+            showToast('비밀번호가 변경되었습니다.');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showToast(data.message ?? '변경 실패', true);
+        }
+    }
+</script>
+</body>
+</html>

@@ -17,18 +17,36 @@
         VALUES (#{roleId}, #{username}, #{name}, #{password})
     </insert>
 
+    <select id="findById" parameterType="long"
+            resultType="com.aenggukland.letspt.member.Member">
+        SELECT *
+        FROM member
+        WHERE member_id = #{memberId}
+          AND is_deleted = FALSE
+    </select>
+
     <update id="update">
         UPDATE member
-        SET name                = #{request.name},
-            gender              = #{request.gender},
-            age                 = #{request.age},
-            height              = #{request.height},
-            weight              = #{request.weight},
-            body_fat_percentage = #{request.bodyFatPercentage},
-            target_weight       = #{request.targetWeight},
-            fitness_goal        = #{request.fitnessGoal},
-            phone_number        = #{request.phoneNumber},
-            updated_at          = CURRENT_TIMESTAMP
+        <set>
+            <if test="request.name != null">name = #{request.name},</if>
+            <if test="request.gender != null">gender = #{request.gender},</if>
+            <if test="request.age != null">age = #{request.age},</if>
+            <if test="request.height != null">height = #{request.height},</if>
+            <if test="request.weight != null">weight = #{request.weight},</if>
+            <if test="request.bodyFatPercentage != null">body_fat_percentage = #{request.bodyFatPercentage},</if>
+            <if test="request.targetWeight != null">target_weight = #{request.targetWeight},</if>
+            <if test="request.fitnessGoal != null">fitness_goal = #{request.fitnessGoal},</if>
+            <if test="request.phoneNumber != null">phone_number = #{request.phoneNumber},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE username = #{username}
+          AND is_deleted = FALSE
+    </update>
+
+    <update id="updateProfileImage">
+        UPDATE member
+        SET profile_image_url = #{profileImageUrl},
+            updated_at        = CURRENT_TIMESTAMP
         WHERE username = #{username}
           AND is_deleted = FALSE
     </update>

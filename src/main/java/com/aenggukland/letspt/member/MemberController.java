@@ -1,8 +1,12 @@
 package com.aenggukland.letspt.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/member")
@@ -28,6 +32,14 @@ public class MemberController {
                                                @RequestBody PasswordChangeRequest request) {
         memberService.changePassword(username, request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/me/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadProfileImage(
+            @RequestAttribute("username") String username,
+            @RequestPart("file") MultipartFile file) {
+        String imageUrl = memberService.uploadProfileImage(username, file);
+        return ResponseEntity.ok(Map.of("profileImageUrl", imageUrl));
     }
 
     @DeleteMapping("/me")
