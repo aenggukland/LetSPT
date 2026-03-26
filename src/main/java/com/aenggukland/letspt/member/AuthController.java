@@ -1,9 +1,11 @@
 package com.aenggukland.letspt.member;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,10 @@ public class AuthController {
 
     private final MemberService memberService;
 
+    // 운영: true(HTTPS 전용), 로컬: false(HTTP 허용) — application.yml의 cookie.secure 값
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
+
     // 회원가입: 중복 아이디 검증 후 MEMBER 역할로 계정을 생성한다
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody @Valid RegisterRequest request) {
@@ -27,16 +33,22 @@ public class AuthController {
 
     // 로그인: 인증 성공 시 AccessToken을 HttpOnly 쿠키에 담고, 응답 본문으로도 반환한다
     // 쿠키 유효기간은 1시간이며 JWT 만료시간(30분)과 별개이다 (TODO B3)
+    // ResponseCookie를 사용해 SameSite=Strict 와 Secure 속성을 설정한다
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginRequest request,
                                                      HttpServletResponse response) {
         Map<String, String> tokens = memberService.login(request);
 
-        Cookie cookie = new Cookie("accessToken", tokens.get("accessToken"));
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60); // 1시간
-        response.addCookie(cookie);
+        // SameSite=Strict: 크로스 사이트 요청 시 쿠키 전송 차단 (CSRF 방어)
+        // Secure: 운영 환경에서 HTTPS 전용 전송 강제 (cookie.secure=true 시 활성화)
+        ResponseCookie cookie = ResponseCookie.from("accessToken", tokens.get("accessToken"))
+                .httpOnly(true)
+                .path("/")
+                .maxAge(60 * 60) // 1시간
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(tokens);
     }
