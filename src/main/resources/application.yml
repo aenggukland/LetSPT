@@ -29,6 +29,9 @@ jwt:
 upload:
   profile-dir: ${UPLOAD_DIR:uploads/profile}
 
+cookie:
+  secure: ${COOKIE_SECURE:false}  # 운영: true(HTTPS 전용), 로컬: false(기본값)
+
 spring.servlet.multipart:
   max-file-size: 5MB
   max-request-size: 10MB
