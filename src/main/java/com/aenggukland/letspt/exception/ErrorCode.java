@@ -3,6 +3,8 @@ package com.aenggukland.letspt.exception;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+// 도메인별 에러 코드 정의: HTTP 상태 코드 + 사용자에게 반환할 한국어 메시지를 관리한다
+// BusinessException 생성 시 이 값을 사용하며, GlobalExceptionHandler가 응답으로 변환한다
 @Getter
 public enum ErrorCode {
 
@@ -29,8 +31,8 @@ public enum ErrorCode {
     // Server
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
-    private final HttpStatus status;
-    private final String message;
+    private final HttpStatus status;  // GlobalExceptionHandler가 HTTP 응답 상태로 사용
+    private final String message;     // 클라이언트에 노출되는 한국어 오류 메시지
 
     ErrorCode(HttpStatus status, String message) {
         this.status = status;
