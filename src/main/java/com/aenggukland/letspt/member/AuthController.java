@@ -2,6 +2,7 @@ package com.aenggukland.letspt.member;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,13 @@ public class AuthController {
     private final MemberService memberService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@RequestBody @Valid RegisterRequest request) {
         memberService.register(request);
         return ResponseEntity.ok("회원가입 성공");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request,
+    public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginRequest request,
                                                      HttpServletResponse response) {
         Map<String, String> tokens = memberService.login(request);
 

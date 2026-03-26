@@ -1,5 +1,6 @@
 package com.aenggukland.letspt.member;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,14 @@ public class MemberController {
 
     @PutMapping("/me")
     public ResponseEntity<Void> updateMyInfo(@RequestAttribute("username") String username,
-                                             @RequestBody MemberUpdateRequest request) {
+                                             @RequestBody @Valid MemberUpdateRequest request) {
         memberService.updateMyInfo(username, request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/me/password")
     public ResponseEntity<Void> changePassword(@RequestAttribute("username") String username,
-                                               @RequestBody PasswordChangeRequest request) {
+                                               @RequestBody @Valid PasswordChangeRequest request) {
         memberService.changePassword(username, request);
         return ResponseEntity.ok().build();
     }

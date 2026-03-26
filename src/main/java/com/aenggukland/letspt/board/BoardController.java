@@ -1,5 +1,6 @@
 package com.aenggukland.letspt.board;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<Void> create(@RequestAttribute("username") String username,
-                                       @RequestBody BoardCreateRequest request) {
+                                       @RequestBody @Valid BoardCreateRequest request) {
         boardService.create(username, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -27,7 +28,7 @@ public class BoardController {
     @PutMapping("/{boardId}")
     public ResponseEntity<Void> update(@RequestAttribute("username") String username,
                                        @PathVariable Long boardId,
-                                       @RequestBody BoardUpdateRequest request) {
+                                       @RequestBody @Valid BoardUpdateRequest request) {
         boardService.update(username, boardId, request);
         return ResponseEntity.ok().build();
     }
