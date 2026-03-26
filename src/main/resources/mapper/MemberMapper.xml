@@ -4,6 +4,7 @@
 
 <mapper namespace="com.aenggukland.letspt.member.MemberMapper">
 
+    <!-- username으로 회원 단건 조회 (삭제된 회원 제외) -->
     <select id="findByUsername" parameterType="string"
             resultType="com.aenggukland.letspt.member.Member">
         SELECT *
@@ -12,11 +13,13 @@
           AND is_deleted = FALSE
     </select>
 
+    <!-- 신규 회원 저장: 가입 시 role_id는 항상 MEMBER(1)로 고정 -->
     <insert id="save" parameterType="com.aenggukland.letspt.member.Member">
         INSERT INTO member (role_id, username, name, password)
         VALUES (#{roleId}, #{username}, #{name}, #{password})
     </insert>
 
+    <!-- memberId로 회원 단건 조회 (삭제된 회원 제외) -->
     <select id="findById" parameterType="long"
             resultType="com.aenggukland.letspt.member.Member">
         SELECT *
@@ -25,6 +28,7 @@
           AND is_deleted = FALSE
     </select>
 
+    <!-- 회원 정보 부분 수정: null이 아닌 필드만 선택적으로 업데이트하고 updated_at을 갱신한다 -->
     <update id="update">
         UPDATE member
         <set>
@@ -43,6 +47,7 @@
           AND is_deleted = FALSE
     </update>
 
+    <!-- 프로필 이미지 URL 업데이트: null 전달 시 DB 값도 NULL로 설정 (삭제 처리) -->
     <update id="updateProfileImage">
         UPDATE member
         SET profile_image_url = #{profileImageUrl},
@@ -51,6 +56,7 @@
           AND is_deleted = FALSE
     </update>
 
+    <!-- 비밀번호 변경: BCrypt 암호화된 값을 직접 받아 저장한다 -->
     <update id="updatePassword">
         UPDATE member
         SET password   = #{newEncodedPassword},
@@ -59,6 +65,7 @@
           AND is_deleted = FALSE
     </update>
 
+    <!-- 소프트 삭제: 물리 삭제 대신 is_deleted 플래그와 deleted_at 타임스탬프를 설정한다 -->
     <update id="softDelete" parameterType="string">
         UPDATE member
         SET is_deleted = TRUE,

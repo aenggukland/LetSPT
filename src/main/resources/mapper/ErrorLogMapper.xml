@@ -4,6 +4,7 @@
 
 <mapper namespace="com.aenggukland.letspt.error.ErrorLogMapper">
 
+    <!-- 에러 로그 저장: 예외 발생 시 요청 정보와 오류 내용을 기록한다 -->
     <insert id="save" parameterType="com.aenggukland.letspt.error.ErrorLog">
         INSERT INTO error_log (error_code, method, url, username, message, stack_trace)
         VALUES (#{errorCode}, #{method}, #{url}, #{username}, #{message}, #{stackTrace})

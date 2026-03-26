@@ -4,6 +4,8 @@
 
 <mapper namespace="com.aenggukland.letspt.board.BoardMapper">
 
+    <!-- Board 엔티티 ResultMap: DB 컬럼(snake_case) → Java 필드(camelCase) 매핑
+         category 컬럼은 EnumTypeHandler로 BoardCategory Enum 변환을 처리한다 -->
     <resultMap id="boardResultMap" type="com.aenggukland.letspt.board.Board">
         <id     property="boardId"   column="board_id"/>
         <result property="imageId"   column="image_id"/>
@@ -19,13 +21,14 @@
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
+    <!-- boardId로 게시글 단건 조회 (삭제된 게시글 제외) -->
     <select id="findById" parameterType="long" resultMap="boardResultMap">
         SELECT * FROM board
         WHERE board_id = #{boardId}
           AND is_deleted = FALSE
     </select>
 
-    <!-- my-page: LESSON 최근 N건 (대상 회원 기준) -->
+    <!-- 마이페이지 LESSON 카드: 대상 회원(member_id) 기준 최근 N건 조회 -->
     <select id="findRecentLessonsByMemberId"
             resultType="com.aenggukland.letspt.board.BoardSummary">
         SELECT board_id, title, created_at
@@ -37,7 +40,7 @@
         LIMIT #{limit}
     </select>
 
-    <!-- my-page: DIET/EXERCISE 최근 N건 (작성자 기준) -->
+    <!-- 마이페이지 DIET/EXERCISE 카드: 작성자(author_id)와 카테고리 기준 최근 N건 조회 -->
     <select id="findRecentByAuthor"
             resultType="com.aenggukland.letspt.board.BoardSummary">
         SELECT board_id, title, created_at
@@ -49,7 +52,7 @@
         LIMIT #{limit}
     </select>
 
-    <!-- 전체 목록: LESSON (대상 회원 기준) -->
+    <!-- LESSON 전체 목록: 대상 회원(member_id) 기준, 최신순 정렬 -->
     <select id="findAllLessonsByMemberId" parameterType="long" resultMap="boardResultMap">
         SELECT * FROM board
         WHERE category = 'LESSON'
@@ -58,7 +61,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <!-- 전체 목록: DIET/EXERCISE (작성자 기준) -->
+    <!-- DIET/EXERCISE 전체 목록: 작성자(author_id)와 카테고리 기준, 최신순 정렬 -->
     <select id="findAllByAuthor" resultMap="boardResultMap">
         SELECT * FROM board
         WHERE category = #{category}
@@ -67,12 +70,14 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- 새 게시글 저장: 생성된 board_id를 엔티티에 자동 주입 -->
     <insert id="save" parameterType="com.aenggukland.letspt.board.Board"
             useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO board (image_id, author_id, member_id, category, title, content)
         VALUES (#{imageId}, #{authorId}, #{memberId}, #{category}, #{title}, #{content})
     </insert>
 
+    <!-- 게시글 부분 수정: null이 아닌 필드만 선택적으로 업데이트하고 updated_at을 갱신한다 -->
     <update id="update">
         UPDATE board
         <set>
@@ -84,6 +89,7 @@
           AND is_deleted = FALSE
     </update>
 
+    <!-- 소프트 삭제: 물리 삭제 대신 is_deleted 플래그를 설정한다 -->
     <update id="softDelete" parameterType="long">
         UPDATE board
         SET is_deleted = TRUE,
