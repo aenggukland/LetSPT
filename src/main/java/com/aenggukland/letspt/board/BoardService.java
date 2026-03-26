@@ -68,7 +68,7 @@ public class BoardService {
     // LESSON 카테고리는 대상 회원(memberId)이 필수이며, 존재 여부 검증은 미구현 (TODO B7)
     public void create(String username, BoardCreateRequest request) {
         Member author = getByUsername(username);
-        BoardCategory category = BoardCategory.valueOf(request.getCategory());
+        BoardCategory category = BoardCategory.from(request.getCategory()); // valueOf() 대신 from() 사용 — 잘못된 값 시 400 반환
         MemberRole role = MemberRole.fromRoleId(author.getRoleId());
 
         validateWritePermission(category, role);

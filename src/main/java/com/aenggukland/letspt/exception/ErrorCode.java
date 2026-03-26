@@ -27,6 +27,7 @@ public enum ErrorCode {
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     BOARD_ACCESS_DENIED(HttpStatus.FORBIDDEN, "게시글에 대한 권한이 없습니다."),
     UNAUTHORIZED_BOARD_WRITE(HttpStatus.FORBIDDEN, "해당 카테고리에 글을 작성할 권한이 없습니다."),
+    INVALID_BOARD_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 카테고리입니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
