@@ -1,6 +1,7 @@
 package com.aenggukland.letspt.config;
 
 import com.aenggukland.letspt.security.JwtFilter;
+import com.aenggukland.letspt.security.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
 
     // 보안 필터 체인 설정: 경로별 접근 권한과 JWT 필터 등록
     @Bean
@@ -40,7 +42,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/master/**").hasRole("MASTER")
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터를 앞에 등록
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)  // JWT 필터를 앞에 등록
+            .addFilterBefore(rateLimitFilter, JwtFilter.class);                      // Rate Limit 필터를 JWT 필터보다 앞에 등록
 
         return http.build();
     }
