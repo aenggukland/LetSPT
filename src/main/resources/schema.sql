@@ -31,18 +31,6 @@ CREATE TABLE IF NOT EXISTS error_log (
 );
 
 -- =========================
--- 3. REFRESH_TOKEN (리프레시 토큰)
--- =========================
-CREATE TABLE IF NOT EXISTS refresh_token (
-    token_id   BIGSERIAL PRIMARY KEY,
-    username   VARCHAR(50)  NOT NULL UNIQUE,
-    token      VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP    NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_refresh_token_member FOREIGN KEY (username) REFERENCES member(username)
-);
-
--- =========================
 -- 3. IMAGE (파일/이미지)
 -- =========================
 CREATE TABLE IF NOT EXISTS image (
@@ -81,7 +69,19 @@ ALTER TABLE member
     ADD COLUMN IF NOT EXISTS profile_image_url VARCHAR(500);
 
 -- =========================
--- 5. BOARD (게시판 통합)
+-- 5. REFRESH_TOKEN (리프레시 토큰)
+-- =========================
+CREATE TABLE IF NOT EXISTS refresh_token (
+    token_id   BIGSERIAL PRIMARY KEY,
+    username   VARCHAR(50)  NOT NULL UNIQUE,
+    token      VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP    NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_refresh_token_member FOREIGN KEY (username) REFERENCES member(username)
+);
+
+-- =========================
+-- 6. BOARD (게시판 통합)
 -- =========================
 CREATE TABLE IF NOT EXISTS board (
     board_id   BIGSERIAL PRIMARY KEY,

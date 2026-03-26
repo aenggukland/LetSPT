@@ -22,7 +22,7 @@ mybatis:
     map-underscore-to-camel-case: true
 
 jwt:
-  secret: ${JWT_SECRET:thisIsASecretKeyForLocalDevOnlyDoNotUseInProd!!}
+  secret: ${JWT_SECRET}
   expiration-ms: 1800000         # 30분 (Access Token)
   refresh-expiration-ms: 604800000  # 7일 (Refresh Token)
 

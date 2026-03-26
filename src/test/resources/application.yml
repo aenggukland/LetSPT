@@ -1,0 +1,4 @@
+# 테스트 전용 설정: JWT_SECRET 환경변수 없이도 @SpringBootTest 컨텍스트 로드가 가능하도록
+# jwt.secret만 고정값으로 오버라이드한다 (운영 키와 무관한 테스트 전용 값)
+jwt:
+  secret: test-secret-key-for-spring-boot-test-only!!
