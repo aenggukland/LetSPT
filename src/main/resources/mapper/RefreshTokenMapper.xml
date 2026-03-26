@@ -4,6 +4,7 @@
 
 <mapper namespace="com.aenggukland.letspt.security.RefreshTokenMapper">
 
+    <!-- Refresh Token 저장: username 충돌(재로그인) 시 토큰 값과 만료 시각을 덮어쓴다 -->
     <insert id="save" parameterType="com.aenggukland.letspt.security.RefreshToken">
         INSERT INTO refresh_token (username, token, expires_at)
         VALUES (#{username}, #{token}, #{expiresAt})
@@ -13,6 +14,7 @@
                           created_at = CURRENT_TIMESTAMP
     </insert>
 
+    <!-- 토큰 값으로 단건 조회: 재발급·로그아웃 처리에서 사용한다 -->
     <select id="findByToken" parameterType="string"
             resultType="com.aenggukland.letspt.security.RefreshToken">
         SELECT *
@@ -20,6 +22,7 @@
         WHERE token = #{token}
     </select>
 
+    <!-- username에 해당하는 토큰 삭제: 로그아웃·탈퇴·만료 처리 시 호출한다 -->
     <delete id="deleteByUsername" parameterType="string">
         DELETE FROM refresh_token
         WHERE username = #{username}
