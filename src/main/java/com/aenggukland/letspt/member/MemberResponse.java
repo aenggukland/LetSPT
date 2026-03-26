@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// 회원 정보 응답 DTO: 비밀번호, isDeleted 등 민감 정보를 제외하고 반환한다
 @Getter
 @Builder
 public class MemberResponse {
@@ -24,6 +25,7 @@ public class MemberResponse {
     private LocalDateTime lastLoginAt;
     private String profileImageUrl;
 
+    // Member 엔티티를 응답 DTO로 변환하는 정적 팩토리 메서드
     public static MemberResponse from(Member member) {
         return MemberResponse.builder()
                 .memberId(member.getMemberId())
