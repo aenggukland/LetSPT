@@ -124,16 +124,13 @@ public class BoardService {
     }
 
     // 카테고리별 작성 권한 검증
-    // LESSON: TRAINER·MASTER만 작성 가능 / DIET·EXERCISE: MEMBER만 작성 가능 (TODO B1)
+    // LESSON: TRAINER·MASTER만 작성 가능 / DIET·EXERCISE: 모든 역할 작성 가능
     private void validateWritePermission(BoardCategory category, MemberRole role) {
         if (category == BoardCategory.LESSON) {
             if (role != MemberRole.TRAINER && role != MemberRole.MASTER) {
                 throw new BusinessException(ErrorCode.UNAUTHORIZED_BOARD_WRITE);
             }
-        } else {
-            if (role != MemberRole.MEMBER) {
-                throw new BusinessException(ErrorCode.UNAUTHORIZED_BOARD_WRITE);
-            }
         }
+        // DIET·EXERCISE는 MEMBER·TRAINER·MASTER 모두 작성 가능하므로 별도 검증 없음
     }
 }
