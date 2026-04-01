@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,7 @@ import java.util.UUID;
 // 인증(로그인/로그아웃/토큰 재발급), 프로필 관리, 비밀번호 변경, 회원 탈퇴를 담당한다
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
     private final MemberMapper memberMapper;
@@ -106,6 +108,7 @@ public class MemberService {
     }
 
     // 내 정보 조회: username으로 회원을 조회하고 MemberResponse DTO로 변환해 반환한다
+    @Transactional(readOnly = true)
     public MemberResponse getMyInfo(String username) {
         Member member = memberMapper.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
