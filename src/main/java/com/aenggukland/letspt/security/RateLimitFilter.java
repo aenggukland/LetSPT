@@ -103,6 +103,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             // X-Forwarded-For는 "실제IP, 프록시IP, ..." 형태이므로 첫 번째 값이 원본 IP
             return forwarded.split(",")[0].trim();
         }
+        // 프록시 없으면 그냥 직접 연결 IP
         return request.getRemoteAddr();
     }
 }
