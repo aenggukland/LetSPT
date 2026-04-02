@@ -36,7 +36,10 @@ public enum ErrorCode {
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
     // Server
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
+
+    // Common
+    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, "요청 값을 읽을 수 없습니다.");
 
     private final HttpStatus status;  // GlobalExceptionHandler가 HTTP 응답 상태로 사용
     private final String message;     // 클라이언트에 노출되는 한국어 오류 메시지

@@ -2,7 +2,6 @@ package com.aenggukland.letspt.schedule;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,4 +20,12 @@ public class ScheduleController {
         scheduleService.reservation(username, scheduleCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
+    @PutMapping("/reply/{scheduleId}")
+    public ResponseEntity<Void> replyReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleReplyRequest scheduleReplyRequest){
+        scheduleService.replyReservation(username, scheduleId, scheduleReplyRequest);
+        return ResponseEntity.ok().build();
+    }
+
 }

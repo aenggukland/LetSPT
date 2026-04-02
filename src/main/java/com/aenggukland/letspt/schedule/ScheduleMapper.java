@@ -7,4 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ScheduleMapper {
 
     void reservation(Long trainerId, @Valid ScheduleCreateRequest scheduleCreateRequest);
+
+    void replyReservation(Schedule schedule);
 }

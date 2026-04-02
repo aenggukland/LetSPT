@@ -8,6 +8,7 @@ import com.aenggukland.letspt.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -50,6 +51,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         saveErrorLog(ErrorCode.INTERNAL_SERVER_ERROR.name(), request, e.getMessage(), stackTrace(e));
         return ResponseEntity.status(500).body(new ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
+    // JSON 역직렬화 실패 처리: Enum 불일치, 타입 오류 등 요청 바디를 읽지 못할 때 400을 반환한다
+    // DB 로그를 저장하지 않는다 (입력값 오류이므로 시스템 이상이 아님)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleEnumException(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(ErrorCode.INVALID_REQUEST_BODY));
     }
 
     // 에러 로그 저장: 요청 메서드·URL·인증 사용자명을 함께 기록한다
