@@ -98,3 +98,21 @@ CREATE TABLE IF NOT EXISTS board (
     CONSTRAINT fk_board_author FOREIGN KEY (author_id) REFERENCES member(member_id),
     CONSTRAINT fk_board_member FOREIGN KEY (member_id) REFERENCES member(member_id)
 );
+
+
+-- =========================
+-- 7. SCHEDULE (일정)
+-- =========================
+CREATE TABLE schedule (
+      schedule_id    BIGSERIAL PRIMARY KEY,
+      trainer_id     BIGINT NOT NULL,
+      member_id      BIGINT NOT NULL,
+      start_datetime TIMESTAMP NOT NULL,
+      end_datetime   TIMESTAMP NOT NULL,
+      class_content  TEXT,
+      state          VARCHAR(20) NOT NULL CHECK (state IN ('RESERVATION', 'COMPLETE', 'CANCEL', 'MEMBER_CANCEL')),
+      memo           TEXT,
+      created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_schedule_trainer FOREIGN KEY (trainer_id) REFERENCES member(member_id),
+      CONSTRAINT fk_schedule_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)
+);
