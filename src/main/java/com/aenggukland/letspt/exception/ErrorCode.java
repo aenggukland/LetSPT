@@ -31,6 +31,8 @@ public enum ErrorCode {
     
     // Schedule
     SCHEDULE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "일정 생성에 대한 권한이 없습니다."),
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정이 존재하지 않습니다."),
+    SCHEDULE_MEMBER_MISMATCH(HttpStatus.FORBIDDEN, "본인의 일정만 접근할 수 있습니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
