@@ -16,4 +16,10 @@
         WHERE member_id = #{memberId}
             AND schedule_id = #{scheduleId}
     </update>
+
+    <select id="findByScheduleId" parameterType="Long">
+        SELECT member_id
+        FROM schedule
+        WHERE schedule_id = #{scheduleId}
+    </select>
 </mapper>
