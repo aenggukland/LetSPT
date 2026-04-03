@@ -35,6 +35,8 @@ public enum ErrorCode {
     SCHEDULE_MEMBER_MISMATCH(HttpStatus.FORBIDDEN, "본인의 일정만 접근할 수 있습니다."),
     SCHEDULE_TRAINER_PT_DUPLICATION(HttpStatus.FORBIDDEN, "같은 시간대에 PT 일정이 있습니다."),
     SCHEDULE_CANCEL_MEMO_REQUIRED(HttpStatus.FORBIDDEN, "예약 취소 시 필수로 이유를 작성해야합니다."),
+    SCHEDULE_UPDATE_DENIED(HttpStatus.FORBIDDEN, "예약 요청 상태의 수업만 수정이 가능합니다."),
+    SCHEDULE_NOT_MODIFIABLE(HttpStatus.BAD_REQUEST, "수정 가능한 일정이 없습니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),

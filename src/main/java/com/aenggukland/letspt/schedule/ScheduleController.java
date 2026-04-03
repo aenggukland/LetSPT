@@ -21,11 +21,15 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-
     @PutMapping("/reply/{scheduleId}")
     public ResponseEntity<Void> replyReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleReplyRequest scheduleReplyRequest){
         scheduleService.replyReservation(username, scheduleId, scheduleReplyRequest);
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<Void> updateReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleUpdateRequest scheduleUpdateRequest){
+        scheduleService.updateReservation(username, scheduleId, scheduleUpdateRequest);
+        return ResponseEntity.ok().build();
+    }
 }
