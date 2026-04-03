@@ -5,21 +5,32 @@
 <mapper namespace="com.aenggukland.letspt.schedule.ScheduleMapper">
     <insert id="reservation">
         INSERT INTO schedule (trainer_id, member_id, start_datetime, end_datetime, class_content, state)
-        VALUES (#{trainerId}, #{memberId}, #{startDatetime}, #{endDatetime}, #{classContent}, 'RESERVATION')
+        VALUES (#{trainerId}, #{request.memberId}, #{request.startDateTime}, #{request.endDateTime}, #{request.classContent}, 'RESERVATION')
     </insert>
 
     <!-- 회원의 예약 취소,확정 -->
     <update id="replyReservation" parameterType="com.aenggukland.letspt.schedule.Schedule">
         UPDATE schedule
-        SET state = #{state},
+        SET state = #{scheduleReplyState},
             memo  = #{memo}
         WHERE member_id = #{memberId}
             AND schedule_id = #{scheduleId}
     </update>
 
     <select id="findByScheduleId" parameterType="Long">
-        SELECT member_id
+        SELECT *
         FROM schedule
         WHERE schedule_id = #{scheduleId}
     </select>
+
+    <select id="getTrainerPtCnt" resultType="int">
+        SELECT COUNT(*)
+        FROM schedule
+        WHERE trainer_id = #{trainerId}
+          AND state = 'RESERVATION'
+          AND start_datetime &lt; #{request.endDateTime}
+          AND end_datetime &gt; #{request.startDateTime}
+    </select>
+
+
 </mapper>

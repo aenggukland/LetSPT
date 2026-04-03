@@ -25,6 +25,11 @@ public class ScheduleService {
             throw new BusinessException(ErrorCode.SCHEDULE_ACCESS_DENIED);
         }
 
+        int trainerPtCnt = scheduleMapper.getTrainerPtCnt(trainerInfo.getMemberId(), scheduleCreateRequest);
+        if(trainerPtCnt > 0){
+            throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_PT_DUPLICATION);
+        }
+
         if(memberMapper.findById(scheduleCreateRequest.getMemberId()).isEmpty()){
             throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
         }
@@ -34,17 +39,20 @@ public class ScheduleService {
 
     // 회원 -> 트레이너 일정 요청 수락/거절
     public void replyReservation(String username, Long scheduleId, @Valid ScheduleReplyRequest scheduleReplyRequest) {
+        if(scheduleReplyRequest.getScheduleReplyState() == ScheduleReplyState.MEMBER_CANCEL && (scheduleReplyRequest.getMemo() == null ||scheduleReplyRequest.getMemo().isBlank())){
+            throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_MEMO_REQUIRED);
+        }
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Long scheduleMemberId = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
-        if(!member.getMemberId().equals(scheduleMemberId)){
+        Schedule scheduleMemberId = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+        if(!member.getMemberId().equals(scheduleMemberId.getMemberId())){
             throw new BusinessException(ErrorCode.SCHEDULE_MEMBER_MISMATCH);
         }
 
         Schedule schedule = Schedule.builder()
                 .memberId(member.getMemberId())
                 .scheduleId(scheduleId)
-                .state(scheduleReplyRequest.getScheduleStatus())
+                .scheduleReplyState(scheduleReplyRequest.getScheduleReplyState())
                 .memo(scheduleReplyRequest.getMemo())
                 .build();
 

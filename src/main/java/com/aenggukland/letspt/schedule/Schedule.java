@@ -18,6 +18,7 @@ public class Schedule {
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private String classContent;
-    private ScheduleStatus state;
+    private ScheduleState state;
+    private ScheduleReplyState scheduleReplyState;
     private String memo;
 }
