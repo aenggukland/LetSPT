@@ -11,26 +11,40 @@
     <!-- 회원의 예약 취소,확정 -->
     <update id="replyReservation" parameterType="com.aenggukland.letspt.schedule.Schedule">
         UPDATE schedule
-        SET state = #{scheduleReplyState},
+        SET state = #{state},
             memo  = #{memo}
         WHERE member_id = #{memberId}
             AND schedule_id = #{scheduleId}
     </update>
 
+    <!--  수업ID로 수업 조회 -->
     <select id="findByScheduleId" parameterType="Long">
         SELECT *
         FROM schedule
         WHERE schedule_id = #{scheduleId}
     </select>
 
+    <!-- 트레이너 수업 날짜 중복 체크 -->
     <select id="getTrainerPtCnt" resultType="int">
         SELECT COUNT(*)
         FROM schedule
         WHERE trainer_id = #{trainerId}
-          AND state = 'RESERVATION'
+          AND state NOT IN ('CANCEL', 'MEMBER_CANCEL', 'FINISH')
           AND start_datetime &lt; #{request.endDateTime}
           AND end_datetime &gt; #{request.startDateTime}
+        <if test="request.scheduleId != null">AND schedule_id != #{request.scheduleId}</if>
     </select>
 
+    <!-- 트레이너가 예약 수정 -->
+    <update id="updateReservation"  parameterType="com.aenggukland.letspt.schedule.Schedule" >
+        UPDATE schedule
+        <set>
+            <if test="classContent != null">class_content = #{classContent},</if>
+            start_datetime = #{startDateTime},
+            end_datetime = #{endDateTime}
+        </set>
+        WHERE schedule_id = #{scheduleId}
+            AND state = 'RESERVATION'
+    </update>
 
 </mapper>

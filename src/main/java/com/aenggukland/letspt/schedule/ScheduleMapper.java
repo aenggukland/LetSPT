@@ -13,7 +13,9 @@ public interface ScheduleMapper {
 
     void replyReservation(Schedule schedule);
 
-    int getTrainerPtCnt(Long trainerId, @Param("request") ScheduleCreateRequest scheduleCreateRequest);
+    int getTrainerPtCnt(Long trainerId, @Param("request") Schedule schedule);
 
     Optional<Schedule> findByScheduleId(Long scheduleId);
+
+    int updateReservation(Schedule scheduleUpdateRequest);
 }
