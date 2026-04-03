@@ -110,9 +110,10 @@ CREATE TABLE schedule (
       start_datetime TIMESTAMP NOT NULL,
       end_datetime   TIMESTAMP NOT NULL,
       class_content  TEXT,
-      state          VARCHAR(20) NOT NULL CHECK (state IN ('RESERVATION', 'COMPLETE', 'CANCEL', 'MEMBER_CANCEL')),
+      state          VARCHAR(20) NOT NULL CHECK (state IN ('RESERVATION', 'COMPLETE', 'CANCEL', 'MEMBER_CANCEL','FINISH')),
       memo           TEXT,
       created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       CONSTRAINT fk_schedule_trainer FOREIGN KEY (trainer_id) REFERENCES member(member_id),
-      CONSTRAINT fk_schedule_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)
+      CONSTRAINT fk_schedule_member  FOREIGN KEY (member_id)  REFERENCES member(member_id),
+      CONSTRAINT uq_schedule_trainer_time UNIQUE (trainer_id, start_datetime)
 );
