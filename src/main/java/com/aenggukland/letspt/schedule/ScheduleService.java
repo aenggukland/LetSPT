@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 // 일정관리 비즈니스 로직을 처리하는 서비스
 @Service
 @RequiredArgsConstructor
@@ -107,6 +109,32 @@ public class ScheduleService {
         int updatedCount = scheduleMapper.updateReservation(updateSchedule);
         if(updatedCount == 0){
             throw new BusinessException(ErrorCode.SCHEDULE_NOT_MODIFIABLE);
+        }
+    }
+
+    // 트레이너가 수업 취소
+    public void cancelReservation(String username, Long scheduleId, @Valid ScheduleCancelRequest scheduleCancelRequest) {
+        Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Schedule checkSchedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+        if(!trainer.getMemberId().equals(checkSchedule.getTrainerId())){
+            throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_MISMATCH);
+        }
+        // 일정 요청, 수락, 회원 취소 상태인 수업만 취소 가능
+        ScheduleState scheduleState = checkSchedule.getState();
+        if(!List.of(ScheduleState.RESERVATION, ScheduleState.COMPLETE, ScheduleState.MEMBER_CANCEL)
+                .contains(scheduleState)){
+            throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_STATE_MISMATCH);
+        }
+        ScheduleState cancelState = ScheduleState.CANCEL;
+        Schedule schedule = Schedule.builder()
+                .scheduleId(scheduleId)
+                .memo(scheduleCancelRequest.getMemo())
+                .state(cancelState)
+                .build();
+
+        int cancelSchedule = scheduleMapper.cancelReservation(schedule);
+        if(cancelSchedule == 0){
+            throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_FAILED);
         }
     }
 }

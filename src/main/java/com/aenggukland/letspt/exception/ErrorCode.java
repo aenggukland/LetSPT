@@ -39,6 +39,8 @@ public enum ErrorCode {
     SCHEDULE_UPDATE_DENIED(HttpStatus.CONFLICT, "예약 요청 상태의 수업만 수정이 가능합니다."),
     SCHEDULE_NOT_MODIFIABLE(HttpStatus.CONFLICT, "수정 가능한 일정이 없습니다."),
     SCHEDULE_REPLY_DENIED(HttpStatus.CONFLICT, "예약 요청 상태의 수업만 수락/거부가 가능합니다."),
+    SCHEDULE_CANCEL_FAILED(HttpStatus.CONFLICT, "수업 취소에 실패했습니다."),
+    SCHEDULE_CANCEL_STATE_MISMATCH(HttpStatus.CONFLICT, "일정 요청, 수락, 회원 취소 상태만 취소가 가능합니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
