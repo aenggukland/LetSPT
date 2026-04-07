@@ -35,4 +35,11 @@ public class ScheduleController {
         scheduleService.updateReservation(username, scheduleId, scheduleUpdateRequest);
         return ResponseEntity.ok().build();
     }
+
+    // 트레이너가 수업 취소
+    @PutMapping("/cancel/{scheduleId}")
+    public ResponseEntity<Void> cancelReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleCancelRequest scheduleCancelRequest){
+        scheduleService.cancelReservation(username, scheduleId, scheduleCancelRequest);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -47,4 +47,12 @@
             AND state = 'RESERVATION'
     </update>
 
+    <!-- 트레이너가 예약 취소 -->
+    <update id="cancelReservation"  parameterType="com.aenggukland.letspt.schedule.Schedule" >
+        UPDATE schedule
+        SET state = #{state},
+            memo  = #{memo}
+        WHERE schedule_id = #{scheduleId}
+    </update>
+
 </mapper>

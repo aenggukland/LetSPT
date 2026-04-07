@@ -18,4 +18,6 @@ public interface ScheduleMapper {
     Optional<Schedule> findByScheduleId(Long scheduleId);
 
     int updateReservation(Schedule scheduleUpdateRequest);
+
+    int cancelReservation(Schedule scheduleCancelRequest);
 }
