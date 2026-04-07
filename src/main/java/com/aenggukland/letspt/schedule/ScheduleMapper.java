@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 @Mapper
@@ -20,4 +21,8 @@ public interface ScheduleMapper {
     int updateReservation(Schedule scheduleUpdateRequest);
 
     int cancelReservation(Schedule scheduleCancelRequest);
+
+    List<ScheduleResponse> getMemberSchedule(Long memberId);
+
+    List<ScheduleResponse> getTrainerSchedule(Long memberId);
 }

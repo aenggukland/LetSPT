@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // 일정관리 비즈니스 로직을 처리하는 서비스
@@ -19,6 +20,24 @@ import java.util.List;
 public class ScheduleService {
     private final ScheduleMapper scheduleMapper;
     private final MemberMapper memberMapper;
+
+    // 회원,트레이너 수업 조회
+    public ScheduleListResponse getSchedule(String username) {
+        Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        MemberRole role = MemberRole.fromRoleId(member.getRoleId());
+        List<ScheduleResponse> scheduleResponse = new ArrayList<>();
+        // 학생
+        if(role == MemberRole.MEMBER){
+            scheduleResponse = scheduleMapper.getMemberSchedule(member.getMemberId());
+        // 트레이너, 마스터
+        }else {
+            scheduleResponse = scheduleMapper.getTrainerSchedule(member.getMemberId());
+        }
+        return ScheduleListResponse.builder()
+                .memberRole(role)
+                .schedules(scheduleResponse)
+                .build();
+    }
 
     // 트레이너 -> 사용자 일정 확인 요청
     public void reservation(String username, ScheduleCreateRequest scheduleCreateRequest) {

@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 // 트레이너가 회원에게 일정 공유
 // 모든 엔드포인트는 JWT 인증이 필요하며, @RequestAttribute("username")으로 인증 사용자를 수신한다
 @RestController
@@ -14,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+
+    @GetMapping
+    public ResponseEntity<ScheduleListResponse> getSchedule(@RequestAttribute("username") String username){
+
+        return ResponseEntity.ok().body(scheduleService.getSchedule(username));
+    }
 
     // 트레이너 -> 사용자 일정 확인 요청
     @PostMapping("/reservation")
