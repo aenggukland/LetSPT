@@ -42,12 +42,19 @@ public class ScheduleService {
 
     // 회원 -> 트레이너 일정 요청 수락/거절
     public void replyReservation(String username, Long scheduleId, ScheduleReplyRequest scheduleReplyRequest) {
+        // 거절일때 거절 사유 요청값 필수
         if(scheduleReplyRequest.getScheduleReplyState() == ScheduleReplyState.MEMBER_CANCEL && (scheduleReplyRequest.getMemo() == null ||scheduleReplyRequest.getMemo().isBlank())){
             throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_MEMO_REQUIRED);
         }
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         Schedule checkSchedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 예약 요청 상태의 수업만 수락/거절 가능
+        if(!checkSchedule.getState().equals(ScheduleState.RESERVATION)){
+            throw new BusinessException(ErrorCode.SCHEDULE_REPLY_DENIED);
+        }
+        // 수업 회원ID와 요청 회원ID가 일치해야함
         if(!member.getMemberId().equals(checkSchedule.getMemberId())){
             throw new BusinessException(ErrorCode.SCHEDULE_MEMBER_MISMATCH);
         }
