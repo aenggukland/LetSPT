@@ -32,7 +32,8 @@ public enum ErrorCode {
     // Schedule
     SCHEDULE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "일정 생성에 대한 권한이 없습니다."),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "일정이 존재하지 않습니다."),
-    SCHEDULE_MEMBER_MISMATCH(HttpStatus.FORBIDDEN, "본인의 일정만 접근할 수 있습니다."),
+    SCHEDULE_MEMBER_MISMATCH(HttpStatus.FORBIDDEN, "본인(회원)의 일정만 접근할 수 있습니다."),
+    SCHEDULE_TRAINER_MISMATCH(HttpStatus.FORBIDDEN, "본인(트레이너)의 일정만 접근할 수 있습니다."),
     SCHEDULE_TRAINER_PT_DUPLICATION(HttpStatus.CONFLICT, "같은 시간대에 PT 일정이 있습니다."),
     SCHEDULE_CANCEL_MEMO_REQUIRED(HttpStatus.BAD_REQUEST, "예약 취소 시 필수로 이유를 작성해야합니다."),
     SCHEDULE_UPDATE_DENIED(HttpStatus.CONFLICT, "예약 요청 상태의 수업만 수정이 가능합니다."),

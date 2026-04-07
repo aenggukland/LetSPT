@@ -64,10 +64,15 @@ public class ScheduleService {
             throw new BusinessException(ErrorCode.SCHEDULE_REPLY_DENIED);
         }
 
+        ScheduleState state = switch(scheduleReplyRequest.getScheduleReplyState()) {
+            case COMPLETE -> ScheduleState.COMPLETE;
+            case MEMBER_CANCEL -> ScheduleState.MEMBER_CANCEL;
+        };
+
         Schedule schedule = Schedule.builder()
                 .memberId(member.getMemberId())
                 .scheduleId(scheduleId)
-                .state(ScheduleState.valueOf(scheduleReplyRequest.getScheduleReplyState().name()))
+                .state(state)
                 .memo(scheduleReplyRequest.getMemo())
                 .build();
 
@@ -76,11 +81,11 @@ public class ScheduleService {
 
     // 트레이너가 예약 내용 수정(예약 요청 상태인 수업만 가능)
     public void updateReservation(String username, Long scheduleId, ScheduleUpdateRequest scheduleUpdateRequest) {
-        Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Schedule schedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
 
-        if(!member.getMemberId().equals(schedule.getTrainerId())){
-            throw new BusinessException(ErrorCode.SCHEDULE_MEMBER_MISMATCH);
+        if(!trainer.getMemberId().equals(schedule.getTrainerId())){
+            throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_MISMATCH);
         }
 
         if(schedule.getState() != ScheduleState.RESERVATION){
@@ -94,7 +99,7 @@ public class ScheduleService {
                 .classContent(scheduleUpdateRequest.getClassContent())
                 .build();
 
-        int trainerPtCnt = scheduleMapper.getTrainerPtCnt(member.getMemberId(), updateSchedule);
+        int trainerPtCnt = scheduleMapper.getTrainerPtCnt(trainer.getMemberId(), updateSchedule);
         if(trainerPtCnt > 0){
             throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_PT_DUPLICATION);
         }
