@@ -26,17 +26,21 @@ public class ScheduleService {
         if(role != MemberRole.TRAINER && role != MemberRole.MASTER){
             throw new BusinessException(ErrorCode.SCHEDULE_ACCESS_DENIED);
         }
+
+        // 회원 존재 확인
+        if(memberMapper.findById(scheduleCreateRequest.getMemberId()).isEmpty()){
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
         Schedule schedule = Schedule.builder()
                 .startDateTime(scheduleCreateRequest.getStartDateTime())
                 .endDateTime(scheduleCreateRequest.getEndDateTime())
                 .build();
+
+        // 같은 시간대 수업 중복체크
         int trainerPtCnt = scheduleMapper.getTrainerPtCnt(trainerInfo.getMemberId(), schedule);
         if(trainerPtCnt > 0){
             throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_PT_DUPLICATION);
-        }
-
-        if(memberMapper.findById(scheduleCreateRequest.getMemberId()).isEmpty()){
-            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
         scheduleMapper.reservation(trainerInfo.getMemberId(), scheduleCreateRequest);
@@ -48,23 +52,27 @@ public class ScheduleService {
         if(scheduleReplyRequest.getScheduleReplyState() == ScheduleReplyState.MEMBER_CANCEL && (scheduleReplyRequest.getMemo() == null ||scheduleReplyRequest.getMemo().isBlank())){
             throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_MEMO_REQUIRED);
         }
+
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-
         Schedule checkSchedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
-
-        // 예약 요청 상태의 수업만 수락/거절 가능
-        if(!checkSchedule.getState().equals(ScheduleState.RESERVATION)){
-            throw new BusinessException(ErrorCode.SCHEDULE_REPLY_DENIED);
-        }
         // 수업 회원ID와 요청 회원ID가 일치해야함
         if(!member.getMemberId().equals(checkSchedule.getMemberId())){
             throw new BusinessException(ErrorCode.SCHEDULE_MEMBER_MISMATCH);
         }
+        // 예약 요청 상태의 수업만 수락/거절 가능
+        if(!checkSchedule.getState().equals(ScheduleState.RESERVATION)){
+            throw new BusinessException(ErrorCode.SCHEDULE_REPLY_DENIED);
+        }
+
+        ScheduleState state = switch(scheduleReplyRequest.getScheduleReplyState()) {
+            case COMPLETE -> ScheduleState.COMPLETE;
+            case MEMBER_CANCEL -> ScheduleState.MEMBER_CANCEL;
+        };
 
         Schedule schedule = Schedule.builder()
                 .memberId(member.getMemberId())
                 .scheduleId(scheduleId)
-                .state(ScheduleState.valueOf(scheduleReplyRequest.getScheduleReplyState().name()))
+                .state(state)
                 .memo(scheduleReplyRequest.getMemo())
                 .build();
 
@@ -73,14 +81,15 @@ public class ScheduleService {
 
     // 트레이너가 예약 내용 수정(예약 요청 상태인 수업만 가능)
     public void updateReservation(String username, Long scheduleId, ScheduleUpdateRequest scheduleUpdateRequest) {
+        Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Schedule schedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
-        if(schedule.getState() != ScheduleState.RESERVATION){
-            throw new BusinessException(ErrorCode.SCHEDULE_UPDATE_DENIED);
+
+        if(!trainer.getMemberId().equals(schedule.getTrainerId())){
+            throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_MISMATCH);
         }
 
-        Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-        if(!member.getMemberId().equals(schedule.getTrainerId())){
-            throw new BusinessException(ErrorCode.SCHEDULE_MEMBER_MISMATCH);
+        if(schedule.getState() != ScheduleState.RESERVATION){
+            throw new BusinessException(ErrorCode.SCHEDULE_UPDATE_DENIED);
         }
 
         Schedule updateSchedule = Schedule.builder()
@@ -90,7 +99,7 @@ public class ScheduleService {
                 .classContent(scheduleUpdateRequest.getClassContent())
                 .build();
 
-        int trainerPtCnt = scheduleMapper.getTrainerPtCnt(member.getMemberId(), updateSchedule);
+        int trainerPtCnt = scheduleMapper.getTrainerPtCnt(trainer.getMemberId(), updateSchedule);
         if(trainerPtCnt > 0){
             throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_PT_DUPLICATION);
         }
