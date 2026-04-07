@@ -15,18 +15,21 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
+    // 트레이너 -> 사용자 일정 확인 요청
     @PostMapping("/reservation")
     public ResponseEntity<Void> reservation(@RequestAttribute("username") String username, @RequestBody @Valid ScheduleCreateRequest scheduleCreateRequest){
         scheduleService.reservation(username, scheduleCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    // 회원 -> 트레이너 일정 요청 수락/거절
     @PutMapping("/reply/{scheduleId}")
     public ResponseEntity<Void> replyReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleReplyRequest scheduleReplyRequest){
         scheduleService.replyReservation(username, scheduleId, scheduleReplyRequest);
         return ResponseEntity.ok().build();
     }
 
+    // 트레이너가 예약 내용 수정(예약 요청 상태인 수업만 가능)
     @PutMapping("/{scheduleId}")
     public ResponseEntity<Void> updateReservation(@RequestAttribute("username") String username, @PathVariable Long scheduleId, @RequestBody @Valid ScheduleUpdateRequest scheduleUpdateRequest){
         scheduleService.updateReservation(username, scheduleId, scheduleUpdateRequest);

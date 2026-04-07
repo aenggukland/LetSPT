@@ -21,7 +21,9 @@ public class ScheduleService {
     // 트레이너 -> 사용자 일정 확인 요청
     public void reservation(String username, ScheduleCreateRequest scheduleCreateRequest) {
         Member trainerInfo = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-        if(!trainerInfo.getRoleId().equals(MemberRole.TRAINER.getRoleId())){
+        // 조회한 트레이너의 권한이 트레이너여야함
+        MemberRole role = MemberRole.fromRoleId(trainerInfo.getRoleId());
+        if(role != MemberRole.TRAINER && role != MemberRole.MASTER){
             throw new BusinessException(ErrorCode.SCHEDULE_ACCESS_DENIED);
         }
         Schedule schedule = Schedule.builder()
