@@ -17,6 +17,7 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
+    //일정 조회
     @GetMapping
     public ResponseEntity<ScheduleListResponse> getSchedule(@RequestAttribute("username") String username){
 

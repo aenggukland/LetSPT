@@ -117,3 +117,36 @@ CREATE TABLE schedule (
       CONSTRAINT fk_schedule_member  FOREIGN KEY (member_id)  REFERENCES member(member_id),
       CONSTRAINT uq_schedule_trainer_time UNIQUE (trainer_id, start_datetime)
 );
+
+-- =========================
+-- 8. CHAT_ROOM (채팅방)
+-- =========================
+CREATE TABLE chat_room (
+       chat_room_id BIGSERIAL PRIMARY KEY,
+       trainer_id   BIGINT NOT NULL,
+       member_id    BIGINT NOT NULL,
+       created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+       CONSTRAINT fk_chatroom_trainer
+           FOREIGN KEY (trainer_id) REFERENCES member(member_id),
+       CONSTRAINT fk_chatroom_member
+           FOREIGN KEY (member_id) REFERENCES member(member_id),
+       CONSTRAINT uq_chatroom_trainer_member
+           UNIQUE (trainer_id, member_id)
+);
+
+-- =========================
+-- 9. CHAT_MESSAGE (채팅메시지)
+-- =========================
+CREATE TABLE chat_message (
+      message_id      BIGSERIAL PRIMARY KEY,
+      chat_room_id    BIGINT NOT NULL,
+      sender_id       BIGINT NOT NULL,
+      message_content TEXT NOT NULL,
+      is_read         BOOLEAN DEFAULT FALSE,
+      is_deleted      BOOLEAN DEFAULT FALSE,
+      sent_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_message_chatroom
+          FOREIGN KEY (chat_room_id) REFERENCES chat_room(chat_room_id),
+      CONSTRAINT fk_message_sender
+          FOREIGN KEY (sender_id) REFERENCES member(member_id)
+);
