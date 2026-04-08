@@ -54,4 +54,17 @@ public class ChatService {
             return chatMapper.getTrainerChatRoomList(requester.getMemberId());
         }
     }
+
+    // 채팅 조회
+    public List<ChatDetailResponse> getChatDetailList(Long chatRoomId, String username) {
+        Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        MemberRole memberRole = MemberRole.fromRoleId(member.getRoleId());
+
+        Long checkId = (memberRole == MemberRole.MEMBER ? chatMapper.getChatRoomMemberId(chatRoomId) : chatMapper.getChatRoomTrainerId(chatRoomId));
+        if(!member.getMemberId().equals(checkId)){
+            throw new BusinessException(ErrorCode.CHAT_ROOM_IN_DENIED);
+        }
+
+        return chatMapper.getChatDetailList(chatRoomId);
+    }
 }

@@ -12,4 +12,10 @@ public interface ChatMapper {
     List<ChatRoomListResponse> getMemberChatRoomList(Long memberId);
 
     List<ChatRoomListResponse> getTrainerChatRoomList(Long memberId);
+
+    List<ChatDetailResponse> getChatDetailList(Long chatRoomId);
+
+    Long getChatRoomMemberId(Long chatRoomId);
+
+    Long getChatRoomTrainerId(Long chatRoomId);
 }

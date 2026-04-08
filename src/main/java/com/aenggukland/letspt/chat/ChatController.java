@@ -28,4 +28,10 @@ public class ChatController {
         return ResponseEntity.ok().body(chatService.getChatRoomList(username));
     }
 
+    //채팅내용 조회
+    @GetMapping("/detail/{chatRoomId}")
+    public ResponseEntity<List<ChatDetailResponse>> getChatDetailList(@PathVariable Long chatRoomId, @RequestAttribute("username") String username){
+        return ResponseEntity.ok().body(chatService.getChatDetailList(chatRoomId, username));
+    }
+
 }
