@@ -39,6 +39,10 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'com.bucket4j:bucket4j-core:8.10.1'
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'

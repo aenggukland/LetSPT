@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aenggukland.letspt.chat.ChatMapper">
+    <insert id="makeChatRoom" parameterType="com.aenggukland.letspt.chat.ChatRoom">
+        INSERT INTO chat_room (trainer_id, member_id)
+        VALUES (#{trainerId}, #{memberId})
+    </insert>
+</mapper>
