@@ -46,6 +46,9 @@ public enum ErrorCode {
     CHAT_ROOM_MAKE_FAILED(HttpStatus.CONFLICT, "채팅방 개설에 실패했습니다."),
     CHAT_ROOM_MAKE_DENIED(HttpStatus.FORBIDDEN, "채팅방 개설에 대한 권한이 없습니다."),
     CHAT_ROOM_IN_DENIED(HttpStatus.FORBIDDEN, "채팅방에 대한 권한이 없습니다."),
+    DELETE_CHAT_NOT_FOUND(HttpStatus.NOT_FOUND, "제거할 채팅이 없습니다."),
+    CHAT_DELETE_DENIED(HttpStatus.FORBIDDEN, "채팅 제거 권한이 없습니다."),
+    CHAT_DELETE_FAILED(HttpStatus.CONFLICT, "채팅 제거에 실패했습니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),

@@ -36,6 +36,7 @@
             INNER JOIN member m
             ON cm.sender_id = m.member_id
         WHERE cm.chat_room_id = #{chatRoomId}
+        AND cm.is_deleted = false
     </select>
 
     <select id="getChatRoomMemberId" parameterType="Long" resultType="Long">
@@ -49,4 +50,20 @@
         FROM chat_room
         WHERE chat_room_id = #{chatRoomId}
     </select>
+
+    <select id="getChatSenderId" parameterType="Long" resultType="Long">
+        SELECT sender_id
+        FROM chat_message
+        WHERE chat_room_id = #{chatRoomId}
+        AND   message_id = #{chatId}
+        AND   is_deleted = false
+    </select>
+
+    <update id="chatDelete">
+        UPDATE chat_message
+        SET is_deleted = true
+        WHERE message_id = #{chatId}
+        AND   chat_room_id = #{chatRoomId}
+        AND   is_deleted = false
+    </update>
 </mapper>

@@ -34,4 +34,11 @@ public class ChatController {
         return ResponseEntity.ok().body(chatService.getChatDetailList(chatRoomId, username));
     }
 
+    //채팅 삭제
+    @DeleteMapping("/{chatRoomId}/message/{chatId}")
+    public ResponseEntity<Void> deleteChat(@PathVariable Long chatRoomId, @PathVariable Long chatId, @RequestAttribute("username") String username){
+        chatService.deleteChat(chatRoomId, chatId, username);
+        return ResponseEntity.noContent().build();
+    }
+
 }

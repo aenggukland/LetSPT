@@ -3,6 +3,7 @@ package com.aenggukland.letspt.chat;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface ChatMapper {
@@ -18,4 +19,8 @@ public interface ChatMapper {
     Long getChatRoomMemberId(Long chatRoomId);
 
     Long getChatRoomTrainerId(Long chatRoomId);
+
+    Optional<Long> getChatSenderId(Long chatRoomId, Long chatId);
+
+    int chatDelete(Long chatRoomId, Long chatId);
 }
