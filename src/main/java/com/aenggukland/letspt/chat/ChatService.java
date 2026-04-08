@@ -67,4 +67,17 @@ public class ChatService {
 
         return chatMapper.getChatDetailList(chatRoomId);
     }
+
+    public void deleteChat(Long chatRoomId, Long chatId, String username) {
+        Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Long senderId = chatMapper.getChatSenderId(chatRoomId, chatId).orElseThrow(() -> new BusinessException(ErrorCode.DELETE_CHAT_NOT_FOUND));
+        if(!member.getMemberId().equals(senderId)){
+            throw new BusinessException(ErrorCode.CHAT_DELETE_DENIED);
+        }
+
+        int deleteChatCnt = chatMapper.chatDelete(chatRoomId, chatId);
+        if(deleteChatCnt == 0){
+            throw new BusinessException(ErrorCode.CHAT_DELETE_FAILED);
+        }
+    }
 }
