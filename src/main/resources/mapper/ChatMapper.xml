@@ -7,4 +7,26 @@
         INSERT INTO chat_room (trainer_id, member_id)
         VALUES (#{trainerId}, #{memberId})
     </insert>
+
+    <select id="getMemberChatRoomList" resultType="com.aenggukland.letspt.chat.ChatRoomListResponse" parameterType="Long">
+        select DISTINCT ON (cr.chat_room_id) m.name as partnerName, cm.is_read, cm.message_content, cm.sent_at
+        from chat_room cr
+            INNER JOIN chat_message cm
+        on cr.chat_room_id = cm.chat_room_id
+            INNER JOIN member m
+            on cr.trainer_id = m.member_id
+        where cr.member_id = #{memberId}
+        order by cr.chat_room_id, sent_at desc
+    </select>
+
+    <select id="getTrainerChatRoomList" resultType="com.aenggukland.letspt.chat.ChatRoomListResponse" parameterType="Long">
+        select DISTINCT ON (cr.chat_room_id) m.name as partnerName, cm.is_read, cm.message_content, cm.sent_at
+        from chat_room cr
+            INNER JOIN chat_message cm
+        on cr.chat_room_id = cm.chat_room_id
+            INNER JOIN member m
+            on cr.member_id = m.member_id
+        where cr.trainer_id = #{memberId}
+        order by cr.chat_room_id, sent_at desc;
+    </select>
 </mapper>

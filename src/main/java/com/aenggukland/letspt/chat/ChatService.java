@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -38,5 +40,18 @@ public class ChatService {
             throw new BusinessException(ErrorCode.CHAT_ROOM_MAKE_FAILED);
         }
 
+    }
+
+    // 채팅방 조회
+    public List<ChatRoomListResponse> getChatRoomList(String username) {
+        Member requester = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        MemberRole requesterRole = MemberRole.fromRoleId(requester.getRoleId());
+        // 회원 채팅방 조회
+        if(requesterRole == MemberRole.MEMBER){
+            return chatMapper.getMemberChatRoomList(requester.getMemberId());
+        // 트레이너, 마스터 채팅방 조회
+        } else {
+            return chatMapper.getTrainerChatRoomList(requester.getMemberId());
+        }
     }
 }
