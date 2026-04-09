@@ -34,6 +34,7 @@ public class SecurityConfig {
                     .requestMatchers("/", "/login", "/register").permitAll()           // 인증 페이지
                     .requestMatchers("/api/auth/register", "/api/auth/login",
                             "/api/auth/refresh", "/api/auth/logout").permitAll()       // 인증 API
+                    .requestMatchers("/ws/chat/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger UI
                     .requestMatchers("/member/**").hasRole("MEMBER")
                     .requestMatchers("/admin/**").hasAnyRole("TRAINER", "MASTER")
