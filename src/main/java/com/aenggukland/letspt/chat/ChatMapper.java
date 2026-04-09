@@ -23,4 +23,6 @@ public interface ChatMapper {
     Optional<Long> getChatSenderId(Long chatRoomId, Long chatId);
 
     int chatDelete(Long chatRoomId, Long chatId);
+
+    void insertMessage(ChatMessage chatMessage);
 }

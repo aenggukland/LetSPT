@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class ScheduleCancelRequest {
-    // 취소 사요
+    // 취소 사유
     @NotBlank
     private String memo;
 }

@@ -66,4 +66,10 @@
         AND   chat_room_id = #{chatRoomId}
         AND   is_deleted = false
     </update>
+
+    <insert id="insertMessage" parameterType="com.aenggukland.letspt.chat.ChatMessage">
+        INSERT INTO chat_message (chat_room_id, sender_id, message_content)
+        VALUES (#{chatRoomId}, #{senderId}, #{messageContent})
+    </insert>
+
 </mapper>
