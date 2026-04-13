@@ -12,4 +12,9 @@
           AND is_deleted = FALSE
         ORDER BY created_at ASC
     </select>
+
+    <insert id="createComment" parameterType="com.aenggukland.letspt.comment.Comment">
+        INSERT INTO board_comment(board_id, author_id, content)
+        values (boardId, authorId, content)
+    </insert>
 </mapper>
