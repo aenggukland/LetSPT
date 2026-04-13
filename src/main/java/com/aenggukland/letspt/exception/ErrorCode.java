@@ -28,6 +28,7 @@ public enum ErrorCode {
     BOARD_ACCESS_DENIED(HttpStatus.FORBIDDEN, "게시글에 대한 권한이 없습니다."),
     UNAUTHORIZED_BOARD_WRITE(HttpStatus.FORBIDDEN, "해당 카테고리에 글을 작성할 권한이 없습니다."),
     INVALID_BOARD_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 카테고리입니다."),
+    INVALID_BOARD_PAGE_NUM(HttpStatus.BAD_REQUEST, "게시글 페이지는 0보다 커야합니다."),
     
     // Schedule
     SCHEDULE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "일정 생성에 대한 권한이 없습니다."),

@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 // 게시글 관련 REST API 엔드포인트를 처리하는 컨트롤러
 // 게시글 단건 조회, 생성, 수정, 삭제 요청을 BoardService에 위임한다
 @RestController
@@ -19,6 +21,12 @@ public class BoardController {
     @GetMapping("/{boardId}")
     public ResponseEntity<Board> getDetail(@PathVariable Long boardId) {
         return ResponseEntity.ok(boardService.getDetail(boardId));
+    }
+
+    // 게시글 다건 조회 및 검색
+    @GetMapping
+    public ResponseEntity<List<Board>> getBoardList(@ModelAttribute BoardSearchReqeust boardSearchReqeust) {
+        return ResponseEntity.ok(boardService.getBoardList(boardSearchReqeust));
     }
 
     // 게시글 생성: 카테고리별 작성 권한을 검증한 후 저장한다

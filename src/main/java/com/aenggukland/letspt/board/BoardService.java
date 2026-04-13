@@ -61,6 +61,12 @@ public class BoardService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_NOT_FOUND));
     }
 
+    // 게시글 다건 조회 및 검색
+    public List<Board> getBoardList(BoardSearchReqeust boardSearchReqeust) {
+        boardSearchReqeust.setOffset(boardSearchReqeust.getPageNum());
+        return boardMapper.getBoardList(boardSearchReqeust);
+    }
+
     // ── CRUD ──────────────────────────────────────────────────────────────
 
     // 게시글 생성: 카테고리별 작성 권한 검증 후 저장한다
