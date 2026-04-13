@@ -47,6 +47,20 @@ public class CommentService {
         }
     }
 
+    // 댓글 삭제
+    public void deleteComment(String username, Long commentId) {
+        //사용자 인증 및 정보 조회
+        Member member = memberCertification(username);
+        commentCertification(member.getMemberId(), commentId);
+        Comment comment = Comment.builder()
+                .commentId(commentId)
+                .build();
+        int deleteCnt = commentMapper.deleteComment(comment);
+        if(deleteCnt < 1){
+            throw new BusinessException(ErrorCode.COMMENT_DELETE_FAILED);
+        }
+    }
+
     // 사용자 인증 함수
     private Member memberCertification(String username) {
         return memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));

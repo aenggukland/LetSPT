@@ -54,6 +54,7 @@ public enum ErrorCode {
     COMMENT_AUTHOR_CERTIFICATION_FAILED(HttpStatus.CONFLICT, "작성자 본인의 댓글만 수정/삭제 가능합니다."),
     COMMENT_AUTHOR_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글의 작성자 정보가 존재하지 않습니다."),
     COMMENT_UPDATE_FAILED(HttpStatus.CONFLICT, "댓글 수정을 실패했습니다."),
+    COMMENT_DELETE_FAILED(HttpStatus.CONFLICT, "댓글 삭제를 실패했습니다."),
 
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),

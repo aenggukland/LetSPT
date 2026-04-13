@@ -14,4 +14,6 @@ public interface CommentMapper {
     Optional<Long> getCommentAuthorId(java.lang.Long commentId);
 
     int updateComment(Comment comment);
+
+    int deleteComment(Comment comment);
 }
