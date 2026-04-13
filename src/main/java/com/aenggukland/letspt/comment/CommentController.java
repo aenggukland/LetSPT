@@ -23,8 +23,15 @@ public class CommentController {
 
     //댓글 작성
     @PostMapping
-    public ResponseEntity<Void> createComment(@RequestAttribute("username") String username, @PathVariable Long boardId, @RequestBody @Valid CommentWriteRequest request){
+    public ResponseEntity<Void> createComment(@RequestAttribute("username") String username, @PathVariable Long boardId, @RequestBody @Valid CommentRequest request){
         commentService.createComment(username, boardId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    //댓글 수정
+    @PutMapping("/{commentId}")
+    public ResponseEntity<Void> updateComment(@RequestAttribute("username") String username, @PathVariable Long commentId, @RequestBody @Valid CommentRequest request){
+        commentService.updateComment(username, commentId, request);
+        return ResponseEntity.ok().build();
     }
 }

@@ -6,7 +6,6 @@ import com.aenggukland.letspt.member.Member;
 import com.aenggukland.letspt.member.MemberMapper;
 import com.aenggukland.letspt.member.MemberRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
