@@ -150,3 +150,19 @@ CREATE TABLE chat_message (
       CONSTRAINT fk_message_sender
           FOREIGN KEY (sender_id) REFERENCES member(member_id)
 );
+
+-- =========================
+-- 10. BOARD_COMMENT (게시판 댓글)
+-- =========================
+CREATE TABLE IF NOT EXISTS board_comment (
+     comment_id BIGSERIAL PRIMARY KEY,
+     board_id   BIGINT    NOT NULL,
+     author_id  BIGINT    NOT NULL,
+     content    TEXT      NOT NULL,
+     is_deleted BOOLEAN   DEFAULT FALSE,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP,
+     deleted_at TIMESTAMP,
+     CONSTRAINT fk_comment_board  FOREIGN KEY (board_id)  REFERENCES board(board_id),
+    CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES member(member_id)
+);

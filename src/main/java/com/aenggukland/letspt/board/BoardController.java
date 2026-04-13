@@ -22,7 +22,7 @@ public class BoardController {
     }
 
     // 게시글 생성: 카테고리별 작성 권한을 검증한 후 저장한다
-    // LESSON은 TRAINER·MASTER만, DIET·EXERCISE는 모든 역할이 작성 가능하다
+    // LESSON은 TRAINER·MASTER만, DIET·EXERCISE·FEEDBACK·BOAST는 모든 역할이 작성 가능하다
     @PostMapping
     public ResponseEntity<Void> create(@RequestAttribute("username") String username,
                                        @RequestBody @Valid BoardCreateRequest request) {
