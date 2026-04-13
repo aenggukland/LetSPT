@@ -1,10 +1,12 @@
 package com.aenggukland.letspt.comment;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-public class CommentWriteRequest {
+@AllArgsConstructor
+public class CommentRequest {
     @NotBlank
     private String content;
 }

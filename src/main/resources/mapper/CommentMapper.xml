@@ -3,8 +3,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.aenggukland.letspt.comment.CommentMapper">
-    <select id="getCommentList" parameterType="long" resultMap="com.aenggukland.letspt.comment.Comment">
-        SELECT bc.content, bc.created_at, m.name as authorName
+    <select id="getCommentList" parameterType="long" resultType="com.aenggukland.letspt.comment.Comment">
+        SELECT bc.comment_id, bc.author_id, bc.content as comment, bc.created_at, m.name as authorName
         FROM board_comment bc
         INNER JOIN member m
         ON bc.author_id = m.member_id
@@ -15,6 +15,13 @@
 
     <insert id="createComment" parameterType="com.aenggukland.letspt.comment.Comment">
         INSERT INTO board_comment(board_id, author_id, content)
-        values (boardId, authorId, content)
+        VALUES (#{boardId}, #{authorId}, #{comment})
     </insert>
+
+    <update id="updateComment" parameterType="com.aenggukland.letspt.comment.Comment">
+        UPDATE board_comment
+        SET content = #{comment},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE comment_id = #{commentId}
+    </update>
 </mapper>
