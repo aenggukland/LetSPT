@@ -24,4 +24,11 @@
             updated_at = CURRENT_TIMESTAMP
         WHERE comment_id = #{commentId}
     </update>
+
+    <update id="deleteComment" parameterType="com.aenggukland.letspt.comment.Comment">
+        UPDATE board_comment
+        SET is_deleted = TRUE,
+            deleted_at = CURRENT_TIMESTAMP
+        WHERE comment_id = #{commentId}
+    </update>
 </mapper>

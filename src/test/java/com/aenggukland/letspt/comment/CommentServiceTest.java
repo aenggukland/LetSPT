@@ -121,7 +121,7 @@ class CommentServiceTest {
 
         Member member = Member.builder().memberId(1L).username(username).build();
         given(memberMapper.findByUsername(username)).willReturn(Optional.of(member));
-        given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(99L)); // 다른 작성자
+        given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(99L));
 
         // when & then
         assertThatThrownBy(() -> commentService.updateComment(username, commentId, request))
@@ -140,11 +140,67 @@ class CommentServiceTest {
         Member member = Member.builder().memberId(1L).username(username).build();
         given(memberMapper.findByUsername(username)).willReturn(Optional.of(member));
         given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(1L));
-        given(commentMapper.updateComment(any(Comment.class))).willReturn(0); // 업데이트 실패
+        given(commentMapper.updateComment(any(Comment.class))).willReturn(0);
 
         // when & then
         assertThatThrownBy(() -> commentService.updateComment(username, commentId, request))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(ErrorCode.COMMENT_UPDATE_FAILED.getMessage());
+    }
+
+    // ===== 댓글 삭제 =====
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    void deleteComment_success() {
+        // given
+        String username = "testuser";
+        Long commentId = 1L;
+
+        Member member = Member.builder().memberId(1L).username(username).build();
+        given(memberMapper.findByUsername(username)).willReturn(Optional.of(member));
+        given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(1L));
+        given(commentMapper.deleteComment(any(Comment.class))).willReturn(1);
+
+        // when
+        commentService.deleteComment(username, commentId);
+
+        // then
+        verify(commentMapper).deleteComment(any(Comment.class));
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 작성자 불일치")
+    void deleteComment_authorMismatch() {
+        // given
+        String username = "testuser";
+        Long commentId = 1L;
+
+        Member member = Member.builder().memberId(1L).username(username).build();
+        given(memberMapper.findByUsername(username)).willReturn(Optional.of(member));
+        given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(99L));
+
+        // when & then
+        assertThatThrownBy(() -> commentService.deleteComment(username, commentId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COMMENT_AUTHOR_CERTIFICATION_FAILED.getMessage());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - DB 삭제 실패")
+    void deleteComment_dbFailed() {
+        // given
+        String username = "testuser";
+        Long commentId = 1L;
+
+        Member member = Member.builder().memberId(1L).username(username).build();
+        given(memberMapper.findByUsername(username)).willReturn(Optional.of(member));
+        given(commentMapper.getCommentAuthorId(commentId)).willReturn(Optional.of(1L));
+        given(commentMapper.deleteComment(any(Comment.class))).willReturn(0);
+
+        // when & then
+        assertThatThrownBy(() -> commentService.deleteComment(username, commentId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COMMENT_DELETE_FAILED.getMessage());
     }
 }
