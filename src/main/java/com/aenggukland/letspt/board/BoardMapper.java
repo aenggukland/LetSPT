@@ -14,7 +14,7 @@ public interface BoardMapper {
     Optional<Board> findById(Long boardId);
 
     // 게시글 다건 조회 및 검색
-    List<Board> getBoardList(BoardSearchReqeust boardSearchReqeust);
+    List<Board> getBoardList(BoardSearchRequest boardSearchRequest);
 
     // 마이페이지 LESSON 카드: 대상 회원(memberId) 기준으로 최근 N건을 조회한다
     List<BoardSummary> findRecentLessonsByMemberId(@Param("memberId") Long memberId,

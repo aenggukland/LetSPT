@@ -25,8 +25,8 @@ public class BoardController {
 
     // 게시글 다건 조회 및 검색
     @GetMapping
-    public ResponseEntity<List<Board>> getBoardList(@ModelAttribute BoardSearchReqeust boardSearchReqeust) {
-        return ResponseEntity.ok(boardService.getBoardList(boardSearchReqeust));
+    public ResponseEntity<List<Board>> getBoardList(@ModelAttribute BoardSearchRequest boardSearchRequest) {
+        return ResponseEntity.ok(boardService.getBoardList(boardSearchRequest));
     }
 
     // 게시글 생성: 카테고리별 작성 권한을 검증한 후 저장한다

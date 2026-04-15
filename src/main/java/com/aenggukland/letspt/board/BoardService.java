@@ -62,9 +62,8 @@ public class BoardService {
     }
 
     // 게시글 다건 조회 및 검색
-    public List<Board> getBoardList(BoardSearchReqeust boardSearchReqeust) {
-        boardSearchReqeust.setOffset(boardSearchReqeust.getPageNum());
-        return boardMapper.getBoardList(boardSearchReqeust);
+    public List<Board> getBoardList(BoardSearchRequest boardSearchRequest) {
+        return boardMapper.getBoardList(boardSearchRequest);
     }
 
     // ── CRUD ──────────────────────────────────────────────────────────────
