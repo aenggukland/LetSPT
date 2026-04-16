@@ -49,7 +49,7 @@ public class FcmTokenService {
         }
     }
 
-    public void sendPush(Long memberId, String type, String body) {
+    public void sendPush(Long memberId, FcmType type, String body) {
         List<FcmToken> fcmTokenList = fcmTokenMapper.getFcmTokenList(memberId);
         if(!fcmTokenList.isEmpty()) {
             for(FcmToken fcmToken : fcmTokenList){
@@ -57,7 +57,7 @@ public class FcmTokenService {
                     Message message = Message.builder()
                             .setToken(fcmToken.getToken())
                             .setNotification(Notification.builder()
-                                    .setTitle(type)
+                                    .setTitle(type.getTitle())
                                     .setBody(body)
                                     .build())
                             .build();
