@@ -12,4 +12,6 @@ public interface FcmTokenMapper {
     List<FcmToken> getFcmTokenList(Long memberId);
 
     int getFcmTokenCnt(Long memberId, String deviceId);
+
+    void updateExpiredToken();
 }

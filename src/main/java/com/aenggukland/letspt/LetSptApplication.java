@@ -2,9 +2,11 @@ package com.aenggukland.letspt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 // Spring Boot 애플리케이션 진입점
 @SpringBootApplication
+@EnableScheduling
 public class LetSptApplication {
 
     public static void main(String[] args) {

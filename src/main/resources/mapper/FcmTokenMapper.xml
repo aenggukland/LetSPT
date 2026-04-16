@@ -28,6 +28,7 @@
         FROM fcm_token
         WHERE member_id = #{memberId}
         AND is_expired = false
+        AND expired_at > CURRENT_TIMESTAMP
     </select>
 
     <select id="getFcmTokenCnt">
@@ -36,4 +37,10 @@
         WHERE member_id = #{memberId}
         AND   device_id = #{deviceId}
     </select>
+
+    <update id="updateExpiredToken">
+        UPDATE fcm_token
+        SET is_expired = true
+        WHERE expired_at &lt;= CURRENT_TIMESTAMP
+    </update>
 </mapper>
