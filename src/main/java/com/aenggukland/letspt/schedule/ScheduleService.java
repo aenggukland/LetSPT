@@ -1,7 +1,10 @@
 package com.aenggukland.letspt.schedule;
 
+import com.aenggukland.letspt.common.CommonMethod;
 import com.aenggukland.letspt.exception.BusinessException;
 import com.aenggukland.letspt.exception.ErrorCode;
+import com.aenggukland.letspt.fcm.FcmTokenService;
+import com.aenggukland.letspt.fcm.FcmType;
 import com.aenggukland.letspt.member.Member;
 import com.aenggukland.letspt.member.MemberMapper;
 import com.aenggukland.letspt.member.MemberRole;
@@ -20,6 +23,7 @@ import java.util.List;
 public class ScheduleService {
     private final ScheduleMapper scheduleMapper;
     private final MemberMapper memberMapper;
+    private final FcmTokenService fcmTokenService;
 
     // 회원,트레이너 수업 조회
     public ScheduleListResponse getSchedule(String username) {
@@ -63,8 +67,12 @@ public class ScheduleService {
         if(trainerPtCnt > 0){
             throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_PT_DUPLICATION);
         }
-
         scheduleMapper.reservation(trainerInfo.getMemberId(), scheduleCreateRequest);
+
+        String startTime = CommonMethod.formatDateTime(scheduleCreateRequest.getStartDateTime());
+        String endTime = CommonMethod.formatDateTime(scheduleCreateRequest.getEndDateTime());
+        String fcmBody = trainerInfo.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지 " + scheduleCreateRequest.getClassContent() + " 수업 요청을 보냈습니다.";
+        fcmTokenService.sendPush(scheduleCreateRequest.getMemberId(), FcmType.SCHEDULE_REQUEST, fcmBody, scheduleCreateRequest.getScheduleId());
     }
 
     // 회원 -> 트레이너 일정 요청 수락/거절
@@ -98,6 +106,13 @@ public class ScheduleService {
                 .build();
 
         scheduleMapper.replyReservation(schedule);
+
+        String startTime = CommonMethod.formatDateTime(checkSchedule.getStartDateTime());
+        String endTime = CommonMethod.formatDateTime(checkSchedule.getEndDateTime());
+        String stateStr = state == ScheduleState.COMPLETE ? "수락" : "거절";
+        String fcmBody = member.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지 " + checkSchedule.getClassContent() + " 수업 요청을 " + stateStr + " 했습니다.";
+        FcmType alarmType = state == ScheduleState.MEMBER_CANCEL ? FcmType.SCHEDULE_CANCEL : FcmType.SCHEDULE_CONFIRM;
+        fcmTokenService.sendPush(checkSchedule.getTrainerId(), alarmType, fcmBody, scheduleId);
     }
 
     // 트레이너가 예약 내용 수정(예약 요청 상태인 수업만 가능)
@@ -129,6 +144,11 @@ public class ScheduleService {
         if(updatedCount == 0){
             throw new BusinessException(ErrorCode.SCHEDULE_NOT_MODIFIABLE);
         }
+
+        String startTime = CommonMethod.formatDateTime(scheduleUpdateRequest.getStartDateTime());
+        String endTime = CommonMethod.formatDateTime(scheduleUpdateRequest.getEndDateTime());
+        String fcmBody = trainer.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지 " + scheduleUpdateRequest.getClassContent() + " 수업 요청을 보냈습니다.";
+        fcmTokenService.sendPush(schedule.getMemberId(), FcmType.SCHEDULE_REQUEST, fcmBody, scheduleId);
     }
 
     // 트레이너가 수업 취소
@@ -155,5 +175,10 @@ public class ScheduleService {
         if(cancelSchedule == 0){
             throw new BusinessException(ErrorCode.SCHEDULE_CANCEL_FAILED);
         }
+
+        String startTime = CommonMethod.formatDateTime(checkSchedule.getStartDateTime());
+        String endTime = CommonMethod.formatDateTime(checkSchedule.getEndDateTime());
+        String fcmBody = trainer.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지의 수업을 취소했습니다.";
+        fcmTokenService.sendPush(checkSchedule.getMemberId(), FcmType.SCHEDULE_CANCEL, fcmBody, scheduleId);
     }
 }

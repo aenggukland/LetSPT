@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 // 일정 생성 요청 DTO
 @Getter
 public class ScheduleCreateRequest {
+    private Long scheduleId;
+
     @NotNull
     private Long memberId;
 
