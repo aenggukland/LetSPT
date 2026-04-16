@@ -1,5 +1,12 @@
 package com.aenggukland.letspt.chat;
 
+import com.aenggukland.letspt.exception.BusinessException;
+import com.aenggukland.letspt.exception.ErrorCode;
+import com.aenggukland.letspt.fcm.FcmTokenService;
+import com.aenggukland.letspt.fcm.FcmType;
+import com.aenggukland.letspt.member.Member;
+import com.aenggukland.letspt.member.MemberMapper;
+import com.aenggukland.letspt.member.MemberRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,6 +23,8 @@ public class KafkaConsumerService {
     private final ChatWebSocketHandler chatWebSocketHandler;
     private final ObjectMapper objectMapper;
     private final ChatMapper chatMapper;
+    private final MemberMapper memberMapper;
+    private final FcmTokenService fcmTokenService;
 
     @KafkaListener(topics = "chat", groupId = "chat-group")
     public void consume(String message) throws Exception {
@@ -40,5 +49,10 @@ public class KafkaConsumerService {
                 }
             }
         }
+
+        Member member = memberMapper.findById(request.getSenderId()).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        MemberRole memberRole = MemberRole.fromRoleId(member.getRoleId());
+        Long receiverId = (memberRole == MemberRole.MEMBER ? chatMapper.getChatRoomTrainerId(request.getChatRoomId()) : chatMapper.getChatRoomMemberId(request.getChatRoomId()));
+        fcmTokenService.sendPush(receiverId, FcmType.CHAT, request.getChatContent());
     }
 }
