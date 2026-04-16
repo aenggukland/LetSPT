@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aenggukland.letspt.fcm.FcmTokenMapper">
+    <insert id="insertToken" parameterType="com.aenggukland.letspt.fcm.FcmToken">
+        INSERT INTO fcm_token(member_id, device_id, token, expired_at, is_expired)
+        VALUES (#{memberId}, #{deviceId}, #{token}, #{expiredAt}, false)
+    </insert>
+
+    <update id="updateToken" parameterType="com.aenggukland.letspt.fcm.FcmToken">
+        UPDATE fcm_token
+        SET token = #{token},
+             expired_at = #{expiredAt},
+             is_expired = false
+        WHERE device_id = #{deviceId}
+            AND member_id = #{memberId}
+    </update>
+
+    <delete id="deleteToken">
+        DELETE FROM fcm_token
+        WHERE member_id = #{memberId}
+            AND device_id = #{deviceId}
+    </delete>
+
+    <select id="getFcmTokenList" parameterType="Long" resultType="com.aenggukland.letspt.fcm.FcmToken">
+        SELECT *
+        FROM fcm_token
+        WHERE member_id = #{memberId}
+        AND is_expired = false
+    </select>
+
+    <select id="getFcmTokenCnt">
+        SELECT count(*)
+        FROM fcm_token
+        WHERE member_id = #{memberId}
+        AND   device_id = #{deviceId}
+    </select>
+</mapper>
