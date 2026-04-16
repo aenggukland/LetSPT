@@ -40,6 +40,11 @@ out/
 
 docker/.env
 
+node_modules/
+package.json
+package-lock.json
+
 CLAUDE.md
 .claude/
 todo.md
+firebase-service-account.json

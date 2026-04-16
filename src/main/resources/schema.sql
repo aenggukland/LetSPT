@@ -166,3 +166,17 @@ CREATE TABLE IF NOT EXISTS board_comment (
      CONSTRAINT fk_comment_board  FOREIGN KEY (board_id)  REFERENCES board(board_id),
     CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES member(member_id)
 );
+
+-- =========================
+-- 11. FCM_TOKEN (FCM 토큰)
+-- =========================
+CREATE TABLE IF NOT EXISTS fcm_token (
+    fcm_token_id  BIGSERIAL PRIMARY KEY,
+    member_id     BIGINT       NOT NULL,
+    device_id     VARCHAR(255) NOT NULL,
+    token         VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    expired_at    TIMESTAMP,
+    is_expired    BOOLEAN      DEFAULT FALSE,
+    CONSTRAINT fk_fcm_token_member FOREIGN KEY (member_id) REFERENCES member(member_id)
+);

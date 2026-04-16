@@ -57,6 +57,10 @@ public enum ErrorCode {
     COMMENT_UPDATE_FAILED(HttpStatus.CONFLICT, "댓글 수정을 실패했습니다."),
     COMMENT_DELETE_FAILED(HttpStatus.CONFLICT, "댓글 삭제를 실패했습니다."),
 
+    //FCM
+    DELETE_FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "제거할 FCM 토큰이 없습니다."),
+    FCM_TOKEN_SEND_FAILED(HttpStatus.CONFLICT, "알림 전송에 실패했습니다."),
+
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
