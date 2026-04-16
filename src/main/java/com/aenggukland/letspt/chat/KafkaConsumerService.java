@@ -53,6 +53,6 @@ public class KafkaConsumerService {
         Member member = memberMapper.findById(request.getSenderId()).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         MemberRole memberRole = MemberRole.fromRoleId(member.getRoleId());
         Long receiverId = (memberRole == MemberRole.MEMBER ? chatMapper.getChatRoomTrainerId(request.getChatRoomId()) : chatMapper.getChatRoomMemberId(request.getChatRoomId()));
-        fcmTokenService.sendPush(receiverId, FcmType.CHAT, request.getChatContent());
+        fcmTokenService.sendPush(receiverId, FcmType.CHAT, request.getChatContent(), request.getChatRoomId());
     }
 }

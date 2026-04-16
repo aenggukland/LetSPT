@@ -49,7 +49,7 @@ public class FcmTokenService {
         }
     }
 
-    public void sendPush(Long memberId, FcmType type, String body) {
+    public void sendPush(Long memberId, FcmType type, String body, Long targetId) {
         List<FcmToken> fcmTokenList = fcmTokenMapper.getFcmTokenList(memberId);
         if(!fcmTokenList.isEmpty()) {
             for(FcmToken fcmToken : fcmTokenList){
@@ -60,6 +60,8 @@ public class FcmTokenService {
                                     .setTitle(type.getTitle())
                                     .setBody(body)
                                     .build())
+                            .putData("type", type.name())
+                            .putData("targetId", String.valueOf(targetId))
                             .build();
                     FirebaseMessaging.getInstance().send(message);
                 } catch (FirebaseMessagingException e) {

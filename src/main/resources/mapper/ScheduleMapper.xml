@@ -24,7 +24,7 @@
           AND s.state IN ('RESERVATION', 'COMPLETE', 'FINISH')
     </select>
 
-    <insert id="reservation">
+    <insert id="reservation" useGeneratedKeys="true" keyProperty="scheduleCreateRequest.scheduleId">
         INSERT INTO schedule (trainer_id, member_id, start_datetime, end_datetime, class_content, state)
         VALUES (#{trainerId}, #{request.memberId}, #{request.startDateTime}, #{request.endDateTime}, #{request.classContent}, 'RESERVATION')
     </insert>
