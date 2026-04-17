@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// 채팅방 생성, 목록 조회, 채팅 내역 조회, 메시지 삭제를 처리하는 서비스
+// 실시간 메시지 전송은 KafkaProducerService/KafkaConsumerService + ChatWebSocketHandler가 담당한다
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -18,7 +20,7 @@ public class ChatService {
     private final ChatMapper chatMapper;
     private final MemberMapper memberMapper;
 
-    // 트레이너가 채팅방 생성
+    // 채팅방 생성: 트레이너(TRAINER·MASTER)만 생성 가능하며, 대상 회원 존재 여부를 검증한다
     public void makeChatRoom(String username, Long memberId) {
         Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         MemberRole requestRole = MemberRole.fromRoleId(trainer.getRoleId());
@@ -42,7 +44,7 @@ public class ChatService {
 
     }
 
-    // 채팅방 조회
+    // 채팅방 목록 조회: 역할에 따라 회원용/트레이너용 쿼리를 분기한다
     public List<ChatRoomListResponse> getChatRoomList(String username) {
         Member requester = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         MemberRole requesterRole = MemberRole.fromRoleId(requester.getRoleId());
@@ -55,7 +57,7 @@ public class ChatService {
         }
     }
 
-    // 채팅 조회
+    // 채팅 내역 조회: 해당 채팅방의 참여자(회원 또는 트레이너)인지 검증한 뒤 메시지 목록을 반환한다
     public List<ChatDetailResponse> getChatDetailList(Long chatRoomId, String username) {
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         MemberRole memberRole = MemberRole.fromRoleId(member.getRoleId());
@@ -68,6 +70,7 @@ public class ChatService {
         return chatMapper.getChatDetailList(chatRoomId);
     }
 
+    // 채팅 메시지 삭제: 메시지 발신자 본인만 삭제할 수 있다
     public void deleteChat(Long chatRoomId, Long chatId, String username) {
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Long senderId = chatMapper.getChatSenderId(chatRoomId, chatId).orElseThrow(() -> new BusinessException(ErrorCode.DELETE_CHAT_NOT_FOUND));

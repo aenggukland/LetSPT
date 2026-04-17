@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-// 일정관리 비즈니스 로직을 처리하는 서비스
+// 수업 일정 비즈니스 로직을 처리하는 서비스
+// 트레이너의 일정 요청/수정/취소, 회원의 수락/거절을 처리하며
+// 각 상태 변경 시 FCM 푸시 알림을 발송한다
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -25,7 +27,7 @@ public class ScheduleService {
     private final MemberMapper memberMapper;
     private final FcmTokenService fcmTokenService;
 
-    // 회원,트레이너 수업 조회
+    // 수업 일정 조회: 역할에 따라 회원용(memberId 기준)/트레이너용(trainerId 기준) 일정을 반환한다
     public ScheduleListResponse getSchedule(String username) {
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         MemberRole role = MemberRole.fromRoleId(member.getRoleId());
@@ -43,7 +45,8 @@ public class ScheduleService {
                 .build();
     }
 
-    // 트레이너 -> 사용자 일정 확인 요청
+    // 수업 요청(트레이너 → 회원): 권한·회원 존재·시간 중복을 검증하고 RESERVATION 상태로 저장한다
+    // 저장 후 대상 회원에게 FCM 푸시를 발송한다
     public void reservation(String username, ScheduleCreateRequest scheduleCreateRequest) {
         Member trainerInfo = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         // 조회한 트레이너의 권한이 트레이너여야함
@@ -75,7 +78,8 @@ public class ScheduleService {
         fcmTokenService.sendPush(scheduleCreateRequest.getMemberId(), FcmType.SCHEDULE_REQUEST, fcmBody, scheduleCreateRequest.getScheduleId());
     }
 
-    // 회원 -> 트레이너 일정 요청 수락/거절
+    // 수업 요청 수락/거절(회원 → 트레이너): RESERVATION 상태인 일정에 대해서만 처리한다
+    // 거절(MEMBER_CANCEL) 시 메모(사유)가 필수이며, 처리 후 트레이너에게 FCM을 발송한다
     public void replyReservation(String username, Long scheduleId, ScheduleReplyRequest scheduleReplyRequest) {
         // 거절일때 거절 사유 요청값 필수
         if(scheduleReplyRequest.getScheduleReplyState() == ScheduleReplyState.MEMBER_CANCEL && (scheduleReplyRequest.getMemo() == null ||scheduleReplyRequest.getMemo().isBlank())){
@@ -115,7 +119,8 @@ public class ScheduleService {
         fcmTokenService.sendPush(checkSchedule.getTrainerId(), alarmType, fcmBody, scheduleId);
     }
 
-    // 트레이너가 예약 내용 수정(예약 요청 상태인 수업만 가능)
+    // 수업 수정(트레이너): RESERVATION 상태인 일정만 수정 가능하며 시간 중복을 재검증한다
+    // 수정 후 회원에게 FCM 푸시를 재발송한다
     public void updateReservation(String username, Long scheduleId, ScheduleUpdateRequest scheduleUpdateRequest) {
         Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Schedule schedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
@@ -151,7 +156,8 @@ public class ScheduleService {
         fcmTokenService.sendPush(schedule.getMemberId(), FcmType.SCHEDULE_REQUEST, fcmBody, scheduleId);
     }
 
-    // 트레이너가 수업 취소
+    // 수업 취소(트레이너): RESERVATION·COMPLETE·MEMBER_CANCEL 상태의 일정을 CANCEL로 변경한다
+    // 취소 후 회원에게 FCM 알림을 발송한다
     public void cancelReservation(String username, Long scheduleId, @Valid ScheduleCancelRequest scheduleCancelRequest) {
         Member trainer = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Schedule checkSchedule = scheduleMapper.findByScheduleId(scheduleId).orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));

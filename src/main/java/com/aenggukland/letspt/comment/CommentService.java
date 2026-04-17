@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+// 게시글 댓글 비즈니스 로직을 처리하는 서비스
+// 댓글 CRUD와 작성자 소유권 검증을 담당한다
 @Service
 @RequiredArgsConstructor
 public class CommentService {

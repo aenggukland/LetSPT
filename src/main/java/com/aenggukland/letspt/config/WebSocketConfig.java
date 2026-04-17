@@ -7,6 +7,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+// WebSocket 엔드포인트 등록 설정
+// /ws/chat/{chatRoomId} 경로로 연결을 허용하며, CORS는 모든 오리진을 허용한다
 @Configuration
 @EnableWebSocket
 @RequiredArgsConstructor
@@ -14,9 +16,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final ChatWebSocketHandler chatWebSocketHandler;
 
+    // WebSocket 핸들러 등록: 채팅방별 URL 패턴으로 연결을 처리한다
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(chatWebSocketHandler, "/ws/chat/{chatRoomId}")
-                .setAllowedOrigins("*");
+                .setAllowedOrigins("*"); // 개발 환경용 전체 허용, 운영 시 도메인 제한 필요
     }
 }
