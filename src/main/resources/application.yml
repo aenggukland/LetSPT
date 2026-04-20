@@ -30,6 +30,11 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:

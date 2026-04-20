@@ -1,5 +1,6 @@
 package com.aenggukland.letspt.fcm;
 
+import com.aenggukland.letspt.config.RedisConfig;
 import com.aenggukland.letspt.exception.BusinessException;
 import com.aenggukland.letspt.exception.ErrorCode;
 import com.aenggukland.letspt.member.Member;
@@ -10,10 +11,18 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisClusterConnection;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisSentinelConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 // FCM(Firebase Cloud Messaging) 토큰 관리 및 푸시 알림 전송 서비스
 // 기기별 토큰 등록/수정/삭제와 실제 푸시 발송을 담당한다
@@ -23,6 +32,7 @@ import java.util.List;
 public class FcmTokenService {
     private final FcmTokenMapper fcmTokenMapper;
     private final MemberMapper memberMapper;
+    private final RedisTemplate<String, String> redisTemplate;
 
     // FCM 토큰 저장: 같은 기기(deviceId)의 토큰이 이미 존재하면 갱신, 없으면 신규 등록한다
     // 토큰 유효기간은 60일로 설정한다
@@ -57,6 +67,13 @@ public class FcmTokenService {
     // 푸시 알림 전송: 대상 회원의 만료되지 않은 모든 기기 토큰에 FCM 메시지를 발송한다
     // 전송 실패 시 예외를 던지지 않고 경고 로그만 남겨 다른 기기 전송에 영향을 주지 않는다
     public void sendPush(Long memberId, FcmType type, String body, Long targetId) {
+        // 중복 방지 알림 Redis 사용
+        String redisKey = "push:" + memberId + ":" + type.name();
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))){
+            return; //이미 보낸 알림이면 스킵
+        }
+        redisTemplate.opsForValue().set(redisKey, "1", 30, TimeUnit.SECONDS);
+
         List<FcmToken> fcmTokenList = fcmTokenMapper.getFcmTokenList(memberId);
         if(!fcmTokenList.isEmpty()) {
             for(FcmToken fcmToken : fcmTokenList){
