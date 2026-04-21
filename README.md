@@ -24,7 +24,7 @@ PT(Personal Training) 관리 플랫폼 — 회원·트레이너·마스터 3개 
 | DB | PostgreSQL 16 |
 | 메시징 | Apache Kafka (트레이너-회원 실시간 채팅), WebSocket |
 | 알림 | Firebase Cloud Messaging (FCM) |
-| 캐시 | Redis 7 (FCM 중복 알림 제거) |
+| 캐시 | Redis 7 (FCM 중복 알림 제거, Access Token 블랙리스트) |
 | 빌드 | Gradle, Docker (멀티스테이지 빌드) |
 | 인프라 | AWS EC2, Jenkins CI/CD |
 | API 문서 | SpringDoc OpenAPI (Swagger UI) |
