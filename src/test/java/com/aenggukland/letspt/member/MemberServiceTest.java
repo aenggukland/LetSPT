@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -31,6 +33,9 @@ class MemberServiceTest {
     @Mock
     private RefreshTokenMapper refreshTokenMapper;
 
+    @Mock
+    private RedisTemplate<String, String> redisTemplate;
+
     private PasswordEncoder passwordEncoder;
     private JwtProvider jwtProvider;
     private MemberService memberService;
@@ -39,7 +44,7 @@ class MemberServiceTest {
     void setUp() {
         passwordEncoder = new BCryptPasswordEncoder();
         jwtProvider = new JwtProvider("test-secret-key-for-junit-test-only!!", 1800000L);
-        memberService = new MemberService(memberMapper, passwordEncoder, jwtProvider, refreshTokenMapper);
+        memberService = new MemberService(memberMapper, passwordEncoder, jwtProvider, refreshTokenMapper, redisTemplate);
         ReflectionTestUtils.setField(memberService, "refreshExpirationMs", 604800000L);
     }
 
@@ -212,9 +217,12 @@ class MemberServiceTest {
                 .expiresAt(LocalDateTime.now().plusDays(7))
                 .build();
 
+        String accessToken = jwtProvider.createToken("testuser", "MEMBER");
+        ValueOperations<String, String> valueOps = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
         when(refreshTokenMapper.findByToken("valid-refresh-token")).thenReturn(Optional.of(rt));
 
-        assertThatNoException().isThrownBy(() -> memberService.logout("valid-refresh-token"));
+        assertThatNoException().isThrownBy(() -> memberService.logout("valid-refresh-token", accessToken));
         verify(refreshTokenMapper).deleteByUsername("testuser");
     }
 
@@ -223,7 +231,7 @@ class MemberServiceTest {
     void logoutInvalidToken() {
         when(refreshTokenMapper.findByToken("invalid-token")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> memberService.logout("invalid-token"))
+        assertThatThrownBy(() -> memberService.logout("invalid-token", null))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
                         .isEqualTo(ErrorCode.INVALID_TOKEN));
