@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final RedisTemplate<String,String> redisTemplate;
 
     // 요청에서 JWT를 추출해 검증하고, 유효한 경우 SecurityContext에 인증 정보를 설정한다
     @Override
@@ -44,6 +46,11 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (token != null && jwtProvider.validateToken(token)) {
+            if (Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + token))) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 에러 반환
+                return;
+            }
+
             Claims claims = jwtProvider.parseToken(token);
             String username = claims.getSubject();
             String role = claims.get("role", String.class);

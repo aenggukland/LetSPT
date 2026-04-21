@@ -7,6 +7,7 @@ import com.aenggukland.letspt.security.RefreshToken;
 import com.aenggukland.letspt.security.RefreshTokenMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 // 회원 관련 비즈니스 로직을 처리하는 서비스
 // 인증(로그인/로그아웃/토큰 재발급), 프로필 관리, 비밀번호 변경, 회원 탈퇴를 담당한다
@@ -34,6 +36,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RefreshTokenMapper refreshTokenMapper;
+    private final RedisTemplate<String, String> redisTemplate;
 
     // Refresh Token 유효기간 (기본값: 7일, 밀리초 단위)
     @Value("${jwt.refresh-expiration-ms:604800000}")
@@ -101,9 +104,16 @@ public class MemberService {
     }
 
     // 로그아웃: DB에서 Refresh Token을 삭제해 재사용을 방지한다
-    public void logout(String refreshToken) {
+    public void logout(String refreshToken, String accessToken) {
         RefreshToken rt = refreshTokenMapper.findByToken(refreshToken)
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_TOKEN));
+
+        // accessToken이 있을 때만 블랙리스트 등록
+        if (accessToken != null) {
+            long expirationTime = jwtProvider.getRemainingExpiration(accessToken);
+            redisTemplate.opsForValue().set("blacklist:" + accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
+        }
+
         refreshTokenMapper.deleteByUsername(rt.getUsername());
     }
 

@@ -11,7 +11,8 @@ import java.util.Date;
 // JWT Access Token 생성·파싱·검증을 담당하는 컴포넌트
 // HS256 알고리즘을 사용하며, 토큰 페이로드에 username과 role을 포함한다
 @Component
-public class JwtProvider {
+public class
+JwtProvider {
 
     private final Key key;
     private final long expirationMs; // Access Token 유효기간 (밀리초)
@@ -56,5 +57,11 @@ public class JwtProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    // 토큰의 남은 만료 시간 반환 (밀리초)
+    public long getRemainingExpiration(String token) {
+        Date expiration = parseToken(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }

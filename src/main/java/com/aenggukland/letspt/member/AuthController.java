@@ -1,5 +1,6 @@
 package com.aenggukland.letspt.member;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +63,15 @@ public class AuthController {
 
     // 로그아웃: Refresh Token을 DB에서 삭제해 재사용을 방지한다
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body) {
-        memberService.logout(body.get("refreshToken"));
+    public ResponseEntity<Void> logout(HttpServletRequest request, @RequestBody Map<String, String> body) {
+        // Authorization 헤더에서 Access Token 추출
+        String accessToken = null;
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            accessToken = header.substring(7);
+        }
+
+        memberService.logout(body.get("refreshToken"), accessToken);
         return ResponseEntity.ok().build();
     }
 
