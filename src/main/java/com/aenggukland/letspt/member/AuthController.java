@@ -1,5 +1,10 @@
 package com.aenggukland.letspt.member;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -12,8 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-// 인증 관련 REST API 엔드포인트를 처리하는 컨트롤러
-// 회원가입, 로그인, 토큰 재발급, 로그아웃 요청을 MemberService에 위임한다
+@Tag(name = "Auth", description = "인증 API — 회원가입, 로그인, 토큰 재발급, 로그아웃")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -25,16 +29,25 @@ public class AuthController {
     @Value("${cookie.secure:false}")
     private boolean cookieSecure;
 
-    // 회원가입: 중복 아이디 검증 후 MEMBER 역할로 계정을 생성한다
+    @Operation(summary = "회원가입", description = "중복 아이디 검증 후 MEMBER 역할로 계정을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원가입 성공"),
+            @ApiResponse(responseCode = "409", description = "아이디 중복"),
+            @ApiResponse(responseCode = "400", description = "입력값 유효성 오류")
+    })
+    @SecurityRequirements
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody @Valid RegisterRequest request) {
         memberService.register(request);
         return ResponseEntity.ok("회원가입 성공");
     }
 
-    // 로그인: 인증 성공 시 AccessToken을 HttpOnly 쿠키에 담고, 응답 본문으로도 반환한다
-    // 쿠키 유효기간은 1시간이며 JWT 만료시간(30분)과 별개이다 (TODO B3)
-    // ResponseCookie를 사용해 SameSite=Strict 와 Secure 속성을 설정한다
+    @Operation(summary = "로그인", description = "인증 성공 시 accessToken(쿠키+본문)과 refreshToken(본문)을 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "401", description = "아이디 또는 비밀번호 불일치")
+    })
+    @SecurityRequirements
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginRequest request,
                                                      HttpServletResponse response) {
@@ -54,14 +67,20 @@ public class AuthController {
         return ResponseEntity.ok(tokens);
     }
 
-    // Access Token 재발급: 유효한 Refresh Token을 검증하고 새 Access Token을 반환한다
+    @Operation(summary = "토큰 재발급", description = "유효한 refreshToken으로 새 accessToken을 발급합니다. Body: {\"refreshToken\": \"...\"}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @ApiResponse(responseCode = "401", description = "refreshToken 만료 또는 유효하지 않음")
+    })
+    @SecurityRequirements
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> body) {
         String newAccessToken = memberService.refresh(body.get("refreshToken"));
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
-    // 로그아웃: Refresh Token을 DB에서 삭제해 재사용을 방지한다
+    @Operation(summary = "로그아웃", description = "refreshToken을 무효화하고 accessToken을 블랙리스트에 등록합니다. Body: {\"refreshToken\": \"...\"}")
+    @ApiResponse(responseCode = "200", description = "로그아웃 성공")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, @RequestBody Map<String, String> body) {
         // Authorization 헤더에서 Access Token 추출
@@ -75,7 +94,11 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    // 인증 테스트용 엔드포인트: JWT 필터를 통과한 사용자명을 그대로 반환한다
+    @Operation(summary = "인증 확인", description = "JWT 인증이 정상적으로 동작하는지 확인합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
     @GetMapping("/me")
     public ResponseEntity<String> me(@RequestAttribute("username") String username) {
         return ResponseEntity.ok("안녕하세요, " + username);
