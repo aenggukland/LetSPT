@@ -1,15 +1,18 @@
 package com.aenggukland.letspt.member;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
-// 로그인 요청 DTO: 아이디와 비밀번호를 필수 입력값으로 받는다
+@Schema(description = "로그인 요청")
 @Getter
 public class LoginRequest {
 
+    @Schema(description = "아이디", example = "john_doe")
     @NotBlank
     private String username;
 
+    @Schema(description = "비밀번호", example = "password1")
     @NotBlank
     private String password;
 }

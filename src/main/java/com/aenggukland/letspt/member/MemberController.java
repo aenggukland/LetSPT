@@ -1,5 +1,9 @@
 package com.aenggukland.letspt.member;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -9,8 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
-// 인증된 회원의 프로필 조회/수정, 비밀번호 변경, 이미지 관리, 회원 탈퇴 API
-// 모든 엔드포인트는 JWT 인증이 필요하며, @RequestAttribute("username")으로 인증 사용자를 수신한다
+@Tag(name = "Member", description = "회원 프로필 API — 조회/수정, 비밀번호 변경, 프로필 이미지, 회원 탈퇴 (JWT 인증 필수)")
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
@@ -18,13 +21,18 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    // 내 정보 조회: 비밀번호를 제외한 회원 프로필 정보를 반환한다
+    @Operation(summary = "내 정보 조회", description = "비밀번호를 제외한 회원 프로필 정보를 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMyInfo(@RequestAttribute("username") String username) {
         return ResponseEntity.ok(memberService.getMyInfo(username));
     }
 
-    // 내 정보 수정: null이 아닌 필드만 선택적으로 업데이트한다
+    @Operation(summary = "내 정보 수정", description = "null이 아닌 필드만 선택적으로 업데이트합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "수정 성공"),
+            @ApiResponse(responseCode = "400", description = "입력값 유효성 오류")
+    })
     @PutMapping("/me")
     public ResponseEntity<Void> updateMyInfo(@RequestAttribute("username") String username,
                                              @RequestBody @Valid MemberUpdateRequest request) {
@@ -32,7 +40,11 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
-    // 비밀번호 변경: 현재 비밀번호 일치 확인 후 새 비밀번호로 교체한다
+    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호 일치 확인 후 새 비밀번호로 교체합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "변경 성공"),
+            @ApiResponse(responseCode = "401", description = "현재 비밀번호 불일치")
+    })
     @PutMapping("/me/password")
     public ResponseEntity<Void> changePassword(@RequestAttribute("username") String username,
                                                @RequestBody @Valid PasswordChangeRequest request) {
@@ -40,7 +52,11 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
-    // 프로필 이미지 업로드: 이미지 파일을 서버에 저장하고 접근 가능한 URL을 반환한다
+    @Operation(summary = "프로필 이미지 업로드", description = "이미지 파일(multipart/form-data)을 서버에 저장하고 접근 가능한 URL을 반환합니다. 최대 5MB.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "업로드 성공"),
+            @ApiResponse(responseCode = "400", description = "파일 형식 오류 또는 크기 초과")
+    })
     @PostMapping(value = "/me/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadProfileImage(
             @RequestAttribute("username") String username,
@@ -49,14 +65,16 @@ public class MemberController {
         return ResponseEntity.ok(Map.of("profileImageUrl", imageUrl));
     }
 
-    // 프로필 이미지 삭제: DB의 URL을 null로 초기화한다 (서버 파일은 미삭제, TODO B5)
+    @Operation(summary = "프로필 이미지 삭제", description = "DB의 이미지 URL을 null로 초기화합니다.")
+    @ApiResponse(responseCode = "200", description = "삭제 성공")
     @DeleteMapping("/me/profile-image")
     public ResponseEntity<Void> deleteProfileImage(@RequestAttribute("username") String username) {
         memberService.deleteProfileImage(username);
         return ResponseEntity.ok().build();
     }
 
-    // 회원 탈퇴: Refresh Token 삭제 후 소프트 삭제(is_deleted = TRUE) 처리한다
+    @Operation(summary = "회원 탈퇴", description = "Refresh Token 삭제 후 소프트 삭제(is_deleted = TRUE) 처리합니다.")
+    @ApiResponse(responseCode = "200", description = "탈퇴 성공")
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdraw(@RequestAttribute("username") String username) {
         memberService.withdraw(username);
