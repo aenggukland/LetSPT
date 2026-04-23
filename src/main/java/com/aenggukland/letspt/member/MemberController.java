@@ -40,7 +40,7 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호 일치 확인 후 새 비밀번호로 교체합니다.")
+    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호 일치 확인 후 새 비밀번호로 변경합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "변경 성공"),
             @ApiResponse(responseCode = "401", description = "현재 비밀번호 불일치")
