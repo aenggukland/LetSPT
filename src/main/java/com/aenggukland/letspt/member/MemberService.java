@@ -133,6 +133,7 @@ public class MemberService {
     }
 
     // 비밀번호 변경: 현재 비밀번호 일치 확인 → 새 비밀번호 동일 여부 확인 → 암호화 후 저장
+    // 변경 성공 시 기존 Refresh Token을 모두 삭제해 탈취된 토큰으로 재발급되는 것을 방지한다
     public void changePassword(String username, PasswordChangeRequest request) {
         Member member = memberMapper.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
@@ -145,6 +146,7 @@ public class MemberService {
         }
 
         memberMapper.updatePassword(username, passwordEncoder.encode(request.getNewPassword()));
+        refreshTokenMapper.deleteByUsername(username);
     }
 
     // 프로필 이미지 업로드: MIME 타입 검증 후 UUID 파일명으로 서버에 저장하고 URL을 DB에 기록한다
