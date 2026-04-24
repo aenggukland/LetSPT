@@ -304,9 +304,10 @@
         });
 
         if (res.ok) {
-            showToast('비밀번호가 변경되었습니다.');
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
+            alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            location.href = '/login';
         } else {
             const data = await res.json().catch(() => ({}));
             showToast(data.message ?? '변경 실패', true);
