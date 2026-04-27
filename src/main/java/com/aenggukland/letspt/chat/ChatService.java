@@ -70,6 +70,21 @@ public class ChatService {
         return chatMapper.getChatDetailList(chatRoomId);
     }
 
+    // 채팅방 참여자 확인: username이 해당 chatRoomId의 회원 또는 트레이너인지 검증하고 memberId를 반환한다
+    // 참여자가 아니면 null을 반환한다 — WebSocketHandler에서 연결 차단 여부 판단에 사용한다
+    @Transactional(readOnly = true)
+    public Long resolveParticipantId(String username, Long chatRoomId) {
+        Member member = memberMapper.findByUsername(username).orElse(null);
+        if (member == null) return null;
+
+        MemberRole role = MemberRole.fromRoleId(member.getRoleId());
+        Long checkId = (role == MemberRole.MEMBER)
+                ? chatMapper.getChatRoomMemberId(chatRoomId)
+                : chatMapper.getChatRoomTrainerId(chatRoomId);
+
+        return member.getMemberId().equals(checkId) ? member.getMemberId() : null;
+    }
+
     // 채팅 메시지 삭제: 메시지 발신자 본인만 삭제할 수 있다
     public void deleteChat(Long chatRoomId, Long chatId, String username) {
         Member member = memberMapper.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
