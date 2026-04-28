@@ -22,6 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -85,14 +86,25 @@ public class MemberService {
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
     }
 
-    // Access Token 재발급: Refresh Token 유효성(존재 여부, 만료 여부)을 검증하고 새 토큰을 반환한다
-    // 만료된 경우 DB에서 토큰을 삭제한 뒤 예외를 던진다
-    public String refresh(String refreshToken) {
-        RefreshToken rt = refreshTokenMapper.findByToken(refreshToken)
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_TOKEN));
+    // Access Token 재발급 + Refresh Token Rotation
+    // 재발급마다 새 Refresh Token을 발급하고 기존 토큰을 교체한다
+    // 교체된 토큰이 재사용되면 탈취로 간주해 해당 계정의 모든 토큰을 강제 삭제한다
+    public Map<String, String> refresh(String oldRefreshToken) {
+        Optional<RefreshToken> rtOpt = refreshTokenMapper.findByToken(oldRefreshToken);
+
+        if (rtOpt.isEmpty()) {
+            // 이미 교체된 토큰 재사용 → 탈취 가능성 → 강제 전체 로그아웃
+            String username = redisTemplate.opsForValue().get("rotated:" + oldRefreshToken);
+            if (username != null) {
+                refreshTokenMapper.deleteByUsername(username);
+            }
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
+        }
+
+        RefreshToken rt = rtOpt.get();
 
         if (rt.getExpiresAt().isBefore(LocalDateTime.now())) {
-            refreshTokenMapper.deleteByUsername(rt.getUsername()); // 만료된 토큰 즉시 삭제
+            refreshTokenMapper.deleteByUsername(rt.getUsername());
             throw new BusinessException(ErrorCode.EXPIRED_TOKEN);
         }
 
@@ -100,7 +112,20 @@ public class MemberService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         String roleName = MemberRole.fromRoleId(member.getRoleId()).name();
-        return jwtProvider.createToken(rt.getUsername(), roleName);
+        String newAccessToken = jwtProvider.createToken(rt.getUsername(), roleName);
+        String newRefreshToken = UUID.randomUUID().toString();
+
+        // 기존 토큰을 Redis에 1시간 보관 — 네트워크 오류로 클라이언트가 응답을 못 받은 경우의 grace period
+        redisTemplate.opsForValue().set("rotated:" + oldRefreshToken, rt.getUsername(), 1, TimeUnit.HOURS);
+
+        // DB Refresh Token 교체 (ON CONFLICT (username) DO UPDATE)
+        refreshTokenMapper.save(RefreshToken.builder()
+                .username(rt.getUsername())
+                .token(newRefreshToken)
+                .expiresAt(LocalDateTime.now().plusSeconds(refreshExpirationMs / 1000))
+                .build());
+
+        return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
     }
 
     // 로그아웃: DB에서 Refresh Token을 삭제해 재사용을 방지한다

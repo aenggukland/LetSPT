@@ -20,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -152,7 +153,7 @@ class MemberServiceTest {
     // =====================
 
     @Test
-    @DisplayName("유효한 Refresh Token으로 Access Token 재발급 성공")
+    @DisplayName("유효한 Refresh Token으로 Access Token + Refresh Token 재발급 성공 (Rotation)")
     void refreshSuccess() {
         Member member = Member.builder()
                 .username("testuser")
@@ -165,24 +166,50 @@ class MemberServiceTest {
                 .expiresAt(LocalDateTime.now().plusDays(7))
                 .build();
 
+        ValueOperations<String, String> valueOps = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
         when(refreshTokenMapper.findByToken("valid-refresh-token")).thenReturn(Optional.of(rt));
         when(memberMapper.findByUsername("testuser")).thenReturn(Optional.of(member));
 
-        String newAccessToken = memberService.refresh("valid-refresh-token");
+        Map<String, String> tokens = memberService.refresh("valid-refresh-token");
 
-        assertThat(newAccessToken).isNotBlank();
-        assertThat(jwtProvider.validateToken(newAccessToken)).isTrue();
+        assertThat(tokens).containsKeys("accessToken", "refreshToken");
+        assertThat(jwtProvider.validateToken(tokens.get("accessToken"))).isTrue();
+        assertThat(tokens.get("refreshToken")).isNotBlank();
+        assertThat(tokens.get("refreshToken")).isNotEqualTo("valid-refresh-token");
+
+        verify(valueOps).set(eq("rotated:valid-refresh-token"), eq("testuser"), eq(1L), eq(TimeUnit.HOURS));
+        verify(refreshTokenMapper).save(any(RefreshToken.class));
     }
 
     @Test
     @DisplayName("존재하지 않는 Refresh Token으로 재발급 시 예외 발생")
     void refreshInvalidToken() {
+        ValueOperations<String, String> valueOps = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
         when(refreshTokenMapper.findByToken("invalid-token")).thenReturn(Optional.empty());
+        when(valueOps.get("rotated:invalid-token")).thenReturn(null);
 
         assertThatThrownBy(() -> memberService.refresh("invalid-token"))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
                         .isEqualTo(ErrorCode.INVALID_TOKEN));
+    }
+
+    @Test
+    @DisplayName("이미 교체된 Refresh Token 재사용 시 해당 계정 강제 로그아웃")
+    void refreshReuseAttack() {
+        ValueOperations<String, String> valueOps = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(refreshTokenMapper.findByToken("rotated-token")).thenReturn(Optional.empty());
+        when(valueOps.get("rotated:rotated-token")).thenReturn("testuser");
+
+        assertThatThrownBy(() -> memberService.refresh("rotated-token"))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                        .isEqualTo(ErrorCode.INVALID_TOKEN));
+
+        verify(refreshTokenMapper).deleteByUsername("testuser");
     }
 
     @Test
