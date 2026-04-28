@@ -67,16 +67,16 @@ public class AuthController {
         return ResponseEntity.ok(tokens);
     }
 
-    @Operation(summary = "토큰 재발급", description = "유효한 refreshToken으로 새 accessToken을 발급합니다. Body: {\"refreshToken\": \"...\"}")
+    @Operation(summary = "토큰 재발급", description = "유효한 refreshToken으로 새 accessToken과 refreshToken을 발급합니다. (Rotation) Body: {\"refreshToken\": \"...\"}")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공 — accessToken, refreshToken 모두 갱신"),
             @ApiResponse(responseCode = "401", description = "refreshToken 만료 또는 유효하지 않음")
     })
     @SecurityRequirements
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> body) {
-        String newAccessToken = memberService.refresh(body.get("refreshToken"));
-        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        Map<String, String> tokens = memberService.refresh(body.get("refreshToken"));
+        return ResponseEntity.ok(tokens);
     }
 
     @Operation(summary = "로그아웃", description = "refreshToken을 무효화하고 accessToken을 블랙리스트에 등록합니다. Body: {\"refreshToken\": \"...\"}")
