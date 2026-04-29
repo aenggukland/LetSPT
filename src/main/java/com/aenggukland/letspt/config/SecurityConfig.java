@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 // Spring Security 설정: JWT 기반 Stateless 인증 구성
 // CSRF 비활성화(JWT 토큰 인증 방식이므로 불필요, TODO S7), 세션 미사용, 경로별 권한 설정을 담당한다
@@ -22,11 +27,13 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final RateLimitFilter rateLimitFilter;
+    private final CorsProperties corsProperties;
 
     // 보안 필터 체인 설정: 경로별 접근 권한과 JWT 필터 등록
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // JWT 사용으로 CSRF 토큰 불필요 (TODO S7)
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 미사용
@@ -47,6 +54,19 @@ public class SecurityConfig {
             .addFilterBefore(rateLimitFilter, JwtFilter.class);                      // Rate Limit 필터를 JWT 필터보다 앞에 등록
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     // 비밀번호 인코더: BCrypt 알고리즘 사용

@@ -17,12 +17,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final ChatWebSocketHandler chatWebSocketHandler;
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    private final CorsProperties corsProperties;
 
     // WebSocket 핸들러 등록: 채팅방별 URL 패턴으로 연결을 처리한다
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(chatWebSocketHandler, "/ws/chat/{chatRoomId}")
                 .addInterceptors(jwtHandshakeInterceptor)
-                .setAllowedOrigins("*"); // 개발 환경용 전체 허용, 운영 시 도메인 제한 필요
+                .setAllowedOrigins(corsProperties.getAllowedOrigins().toArray(String[]::new));
     }
 }
