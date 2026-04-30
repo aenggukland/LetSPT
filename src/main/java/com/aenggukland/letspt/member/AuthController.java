@@ -94,13 +94,4 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "인증 확인", description = "JWT 인증이 정상적으로 동작하는지 확인합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "인증 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-    })
-    @GetMapping("/me")
-    public ResponseEntity<String> me(@RequestAttribute("username") String username) {
-        return ResponseEntity.ok("안녕하세요, " + username);
-    }
 }
