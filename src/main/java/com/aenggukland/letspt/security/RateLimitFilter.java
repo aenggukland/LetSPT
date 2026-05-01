@@ -3,19 +3,25 @@ package com.aenggukland.letspt.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 // IP 기반 Rate Limiting 필터: 브루트포스·대량 가입 공격을 방어한다
 // 인증 관련 엔드포인트에만 적용되며, JwtFilter보다 앞에서 실행된다
@@ -23,12 +29,28 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
+    // X-Forwarded-For를 신뢰할 프록시 IP/CIDR 목록 (쉼표 구분)
+    // 신뢰 목록 외 remoteAddr에서 온 요청은 헤더를 무시해 스푸핑을 차단한다
+    @Value("${app.security.trusted-proxies:127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}")
+    private String trustedProxiesConfig;
+
+    private List<IpAddressMatcher> trustedProxyMatchers;
+
     // 경로별 IP → Bucket 매핑 (ConcurrentHashMap으로 스레드 안전 보장)
     private final ConcurrentHashMap<String, Bucket> loginBuckets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Bucket> registerBuckets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Bucket> refreshBuckets = new ConcurrentHashMap<>();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostConstruct
+    private void initTrustedProxyMatchers() {
+        trustedProxyMatchers = Arrays.stream(trustedProxiesConfig.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(IpAddressMatcher::new)
+                .collect(Collectors.toList());
+    }
 
     // 요청 경로와 IP를 확인해 해당 버킷에서 토큰을 소비한다
     // 토큰 소비 실패 시 429 응답을 반환하고 필터 체인을 중단한다
@@ -96,14 +118,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return null;
     }
 
-    // 클라이언트 IP 추출: 프록시 환경에서는 X-Forwarded-For 헤더를 우선 사용한다
+    // 클라이언트 IP 추출: 신뢰된 프록시에서 온 요청에만 X-Forwarded-For를 사용한다
+    // 신뢰 목록 외 출처의 헤더는 무시해 IP 스푸핑으로 Rate Limit 우회하는 것을 차단한다
     private String extractIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            // X-Forwarded-For는 "실제IP, 프록시IP, ..." 형태이므로 첫 번째 값이 원본 IP
-            return forwarded.split(",")[0].trim();
+        String remoteAddr = request.getRemoteAddr();
+        if (isTrustedProxy(remoteAddr)) {
+            String forwarded = request.getHeader("X-Forwarded-For");
+            if (forwarded != null && !forwarded.isBlank()) {
+                // X-Forwarded-For는 "실제IP, 프록시IP, ..." 형태이므로 첫 번째 값이 원본 IP
+                return forwarded.split(",")[0].trim();
+            }
         }
-        // 프록시 없으면 그냥 직접 연결 IP
-        return request.getRemoteAddr();
+        return remoteAddr;
+    }
+
+    private boolean isTrustedProxy(String ip) {
+        return trustedProxyMatchers.stream().anyMatch(matcher -> matcher.matches(ip));
     }
 }
