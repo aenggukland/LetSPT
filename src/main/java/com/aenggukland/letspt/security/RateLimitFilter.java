@@ -1,14 +1,14 @@
 package com.aenggukland.letspt.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
@@ -16,16 +16,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 // IP 기반 Rate Limiting 필터: 브루트포스·대량 가입 공격을 방어한다
 // 인증 관련 엔드포인트에만 적용되며, JwtFilter보다 앞에서 실행된다
 // 제한: login 10회/분, register 5회/분, refresh 30회/분 (IP당)
+// Redis Lua 스크립트로 INCR+EXPIRE를 원자적으로 실행해 다중 인스턴스 환경에서도 정확한 카운팅 보장
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -36,12 +35,30 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private List<IpAddressMatcher> trustedProxyMatchers;
 
-    // 경로별 IP → Bucket 매핑 (ConcurrentHashMap으로 스레드 안전 보장)
-    private final ConcurrentHashMap<String, Bucket> loginBuckets = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> registerBuckets = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> refreshBuckets = new ConcurrentHashMap<>();
-
+    private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 고정 윈도우(fixed-window) Lua 스크립트:
+    // INCR로 카운트 증가 후, 첫 요청일 때만 EXPIRE 설정해 윈도우를 시작한다
+    private static final RedisScript<Long> RATE_LIMIT_SCRIPT = RedisScript.of("""
+            local count = redis.call('INCR', KEYS[1])
+            if count == 1 then
+              redis.call('EXPIRE', KEYS[1], ARGV[1])
+            end
+            return count
+            """, Long.class);
+
+    private record RateLimitRule(int limit, int windowSec) {}
+
+    private static final Map<String, RateLimitRule> RULES = Map.of(
+            "/api/auth/login",    new RateLimitRule(10, 60),
+            "/api/auth/register", new RateLimitRule(5,  60),
+            "/api/auth/refresh",  new RateLimitRule(30, 60)
+    );
+
+    public RateLimitFilter(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @PostConstruct
     private void initTrustedProxyMatchers() {
@@ -52,25 +69,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 .collect(Collectors.toList());
     }
 
-    // 요청 경로와 IP를 확인해 해당 버킷에서 토큰을 소비한다
-    // 토큰 소비 실패 시 429 응답을 반환하고 필터 체인을 중단한다
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        String ip = extractIp(request);
+        RateLimitRule rule = RULES.get(path);
 
-        Bucket bucket = resolveBucket(path, ip);
-
-        if (bucket == null) {
-            // 제한 대상 경로가 아니면 그냥 통과
+        if (rule == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (bucket.tryConsume(1)) {
+        String ip = extractIp(request);
+        String key = "rl:" + path + ":" + ip;
+
+        if (isAllowed(key, rule)) {
             filterChain.doFilter(request, response);
         } else {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -82,40 +97,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
     }
 
-    // 경로에 따라 알맞은 버킷 맵에서 IP별 버킷을 반환한다
-    // 처음 요청하는 IP라면 새 버킷을 생성해 저장한다
-    private Bucket resolveBucket(String path, String ip) {
-        if (path.equals("/api/auth/login")) {
-            // 로그인: IP당 10회/분
-            return loginBuckets.computeIfAbsent(ip, k ->
-                    Bucket.builder()
-                            .addLimit(Bandwidth.builder()
-                                    .capacity(10)
-                                    .refillGreedy(10, Duration.ofMinutes(1))
-                                    .build())
-                            .build());
+    private boolean isAllowed(String key, RateLimitRule rule) {
+        try {
+            Long count = redisTemplate.execute(
+                    RATE_LIMIT_SCRIPT,
+                    List.of(key),
+                    String.valueOf(rule.windowSec())
+            );
+            return count != null && count <= rule.limit();
+        } catch (Exception e) {
+            // Redis 장애 시 fail-open: 서비스 가용성 우선, 경고 로그만 출력
+            logger.warn("Redis rate limit unavailable, fail-open: " + e.getMessage());
+            return true;
         }
-        if (path.equals("/api/auth/register")) {
-            // 회원가입: IP당 5회/분
-            return registerBuckets.computeIfAbsent(ip, k ->
-                    Bucket.builder()
-                            .addLimit(Bandwidth.builder()
-                                    .capacity(5)
-                                    .refillGreedy(5, Duration.ofMinutes(1))
-                                    .build())
-                            .build());
-        }
-        if (path.equals("/api/auth/refresh")) {
-            // 토큰 재발급: IP당 30회/분
-            return refreshBuckets.computeIfAbsent(ip, k ->
-                    Bucket.builder()
-                            .addLimit(Bandwidth.builder()
-                                    .capacity(30)
-                                    .refillGreedy(30, Duration.ofMinutes(1))
-                                    .build())
-                            .build());
-        }
-        return null;
     }
 
     // 클라이언트 IP 추출: 신뢰된 프록시에서 온 요청에만 X-Forwarded-For를 사용한다
