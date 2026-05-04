@@ -25,4 +25,6 @@ public interface ScheduleMapper {
     List<ScheduleResponse> getMemberSchedule(Long memberId);
 
     List<ScheduleResponse> getTrainerSchedule(Long memberId);
+
+    List<TodayScheduleResult> getTodaySchedules();
 }
