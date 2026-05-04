@@ -76,4 +76,20 @@
         WHERE schedule_id = #{scheduleId}
     </update>
 
+    <!-- 당일 수업 알림: 오늘 날짜에 COMPLETE 상태인 수업과 트레이너·회원 이름을 함께 조회 -->
+    <select id="getTodaySchedules" resultType="com.aenggukland.letspt.schedule.TodayScheduleResult">
+        SELECT s.schedule_id,
+               s.trainer_id,
+               s.member_id,
+               s.start_datetime,
+               s.class_content,
+               t.name AS trainer_name,
+               m.name AS member_name
+        FROM schedule s
+                 INNER JOIN member t ON s.trainer_id = t.member_id
+                 INNER JOIN member m ON s.member_id  = m.member_id
+        WHERE s.state = 'COMPLETE'
+          AND DATE(s.start_datetime) = CURRENT_DATE
+    </select>
+
 </mapper>
