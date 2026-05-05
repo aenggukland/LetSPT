@@ -8,6 +8,7 @@ import com.aenggukland.letspt.fcm.FcmType;
 import com.aenggukland.letspt.member.Member;
 import com.aenggukland.letspt.member.MemberMapper;
 import com.aenggukland.letspt.member.MemberRole;
+import com.aenggukland.letspt.ptticket.PtTicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class ScheduleService {
     private final ScheduleMapper scheduleMapper;
     private final MemberMapper memberMapper;
     private final FcmTokenService fcmTokenService;
+    private final PtTicketService ptTicketService;
 
     // 수업 일정 조회: 역할에 따라 회원용(memberId 기준)/트레이너용(trainerId 기준) 일정을 반환한다
     public ScheduleListResponse getSchedule(String username) {
@@ -154,6 +156,29 @@ public class ScheduleService {
         String endTime = CommonMethod.formatDateTime(scheduleUpdateRequest.getEndDateTime());
         String fcmBody = trainer.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지 " + scheduleUpdateRequest.getClassContent() + " 수업 요청을 보냈습니다.";
         fcmTokenService.sendPush(schedule.getMemberId(), FcmType.SCHEDULE_REQUEST, fcmBody, scheduleId);
+    }
+
+    // 수업 완료 처리(트레이너): COMPLETE 상태인 일정을 FINISH로 변경하고 횟수권을 1회 차감한다
+    public void finishSchedule(String username, Long scheduleId) {
+        Member trainer = memberMapper.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Schedule schedule = scheduleMapper.findByScheduleId(scheduleId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+
+        if (!trainer.getMemberId().equals(schedule.getTrainerId())) {
+            throw new BusinessException(ErrorCode.SCHEDULE_TRAINER_MISMATCH);
+        }
+        if (schedule.getState() != ScheduleState.COMPLETE) {
+            throw new BusinessException(ErrorCode.SCHEDULE_FINISH_DENIED);
+        }
+
+        scheduleMapper.finishSchedule(scheduleId);
+        ptTicketService.deductActiveTicket(schedule.getMemberId(), trainer.getMemberId());
+
+        String startTime = CommonMethod.formatDateTime(schedule.getStartDateTime());
+        String endTime = CommonMethod.formatDateTime(schedule.getEndDateTime());
+        String fcmBody = trainer.getName() + "님이 " + startTime + " 부터 " + endTime + " 까지 " + schedule.getClassContent() + " 수업을 완료 처리했습니다.";
+        fcmTokenService.sendPush(schedule.getMemberId(), FcmType.SCHEDULE_FINISH, fcmBody, scheduleId);
     }
 
     // 수업 취소(트레이너): RESERVATION·COMPLETE·MEMBER_CANCEL 상태의 일정을 CANCEL로 변경한다

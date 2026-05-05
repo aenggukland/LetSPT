@@ -76,6 +76,14 @@
         WHERE schedule_id = #{scheduleId}
     </update>
 
+    <!-- 트레이너가 수업 완료 처리: COMPLETE → FINISH -->
+    <update id="finishSchedule" parameterType="Long">
+        UPDATE schedule
+        SET state = 'FINISH'
+        WHERE schedule_id = #{scheduleId}
+          AND state = 'COMPLETE'
+    </update>
+
     <!-- 당일 수업 알림: 오늘 날짜에 COMPLETE 상태인 수업과 트레이너·회원 이름을 함께 조회 -->
     <select id="getTodaySchedules" resultType="com.aenggukland.letspt.schedule.TodayScheduleResult">
         SELECT s.schedule_id,

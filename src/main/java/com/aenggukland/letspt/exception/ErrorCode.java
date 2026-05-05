@@ -57,6 +57,14 @@ public enum ErrorCode {
     COMMENT_UPDATE_FAILED(HttpStatus.CONFLICT, "댓글 수정을 실패했습니다."),
     COMMENT_DELETE_FAILED(HttpStatus.CONFLICT, "댓글 삭제를 실패했습니다."),
 
+    // PT Ticket
+    PT_TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "횟수권을 찾을 수 없습니다."),
+    PT_TICKET_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 횟수권에 대한 권한이 없습니다."),
+    PT_TICKET_ALREADY_INACTIVE(HttpStatus.BAD_REQUEST, "이미 비활성화된 횟수권입니다."),
+
+    // Schedule - Finish
+    SCHEDULE_FINISH_DENIED(HttpStatus.CONFLICT, "수락(COMPLETE) 상태의 수업만 완료 처리할 수 있습니다."),
+
     //FCM
     DELETE_FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "제거할 FCM 토큰이 없습니다."),
     FCM_TOKEN_SEND_FAILED(HttpStatus.CONFLICT, "알림 전송에 실패했습니다."),

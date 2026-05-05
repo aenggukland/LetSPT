@@ -6,7 +6,8 @@ public enum FcmType {
     SCHEDULE_CONFIRM("일정 확인"),
     SCHEDULE_CANCEL("트레이너의 일정 취소"),
     SCHEDULE_MEMBER_CANCEL("회원의 일정 취소"),
-    SCHEDULE_TODAY_REMINDER("오늘 수업 알림");
+    SCHEDULE_TODAY_REMINDER("오늘 수업 알림"),
+    SCHEDULE_FINISH("수업 완료");
 
     private final String title;
 
