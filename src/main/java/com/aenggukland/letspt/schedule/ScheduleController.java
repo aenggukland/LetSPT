@@ -70,6 +70,21 @@ public class ScheduleController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "수업 완료 처리 (트레이너)", description = "수락된 수업을 완료 처리합니다. 활성 횟수권이 있으면 1회 자동 차감됩니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "완료 처리 성공"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "일정 없음"),
+            @ApiResponse(responseCode = "409", description = "COMPLETE 상태 아님")
+    })
+    @PutMapping("/finish/{scheduleId}")
+    public ResponseEntity<Void> finishSchedule(
+            @RequestAttribute("username") String username,
+            @Parameter(description = "일정 ID") @PathVariable Long scheduleId) {
+        scheduleService.finishSchedule(username, scheduleId);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "수업 취소 (트레이너)", description = "트레이너가 수업을 취소하고 취소 메모를 남깁니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "취소 성공"),

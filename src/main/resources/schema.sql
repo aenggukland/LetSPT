@@ -168,7 +168,25 @@ CREATE TABLE IF NOT EXISTS board_comment (
 );
 
 -- =========================
--- 11. FCM_TOKEN (FCM 토큰)
+-- 11. PT_TICKET (PT 횟수권)
+-- =========================
+CREATE TABLE IF NOT EXISTS pt_ticket (
+    ticket_id       BIGSERIAL PRIMARY KEY,
+    trainer_id      BIGINT  NOT NULL,
+    member_id       BIGINT  NOT NULL,
+    total_count     INT     NOT NULL CHECK (total_count > 0),
+    remaining_count INT     NOT NULL CHECK (remaining_count >= 0),
+    start_date      DATE    NOT NULL DEFAULT CURRENT_DATE,
+    end_date        DATE,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ticket_trainer FOREIGN KEY (trainer_id) REFERENCES member(member_id),
+    CONSTRAINT fk_ticket_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)
+);
+
+-- =========================
+-- 12. FCM_TOKEN (FCM 토큰)
 -- =========================
 CREATE TABLE IF NOT EXISTS fcm_token (
     fcm_token_id  BIGSERIAL PRIMARY KEY,

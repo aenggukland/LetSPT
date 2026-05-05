@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aenggukland.letspt.ptticket.PtTicketMapper">
+
+    <!-- 횟수권 등록 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="ticketId">
+        INSERT INTO pt_ticket (trainer_id, member_id, total_count, remaining_count, start_date, end_date, is_active)
+        VALUES (#{trainerId}, #{memberId}, #{totalCount}, #{remainingCount}, #{startDate}, #{endDate}, #{isActive})
+    </insert>
+
+    <!-- ID로 횟수권 단건 조회 -->
+    <select id="findById" parameterType="Long" resultType="com.aenggukland.letspt.ptticket.PtTicket">
+        SELECT *
+        FROM pt_ticket
+        WHERE ticket_id = #{ticketId}
+    </select>
+
+    <!-- 회원의 횟수권 목록 조회 (트레이너 이름 포함) -->
+    <select id="findByMemberId" parameterType="Long" resultType="com.aenggukland.letspt.ptticket.PtTicketResponse">
+        SELECT t.ticket_id,
+               t.trainer_id,
+               tr.name AS trainer_name,
+               t.member_id,
+               m.name  AS member_name,
+               t.total_count,
+               t.remaining_count,
+               t.start_date,
+               t.end_date,
+               t.is_active,
+               t.created_at
+        FROM pt_ticket t
+                 INNER JOIN member tr ON t.trainer_id = tr.member_id
+                 INNER JOIN member m ON t.member_id = m.member_id
+        WHERE t.member_id = #{memberId}
+        ORDER BY t.is_active DESC, t.created_at DESC
+    </select>
+
+    <!-- 트레이너의 전체 횟수권 목록 조회 (회원 이름 포함) -->
+    <select id="findByTrainerId" parameterType="Long" resultType="com.aenggukland.letspt.ptticket.PtTicketResponse">
+        SELECT t.ticket_id,
+               t.trainer_id,
+               tr.name AS trainer_name,
+               t.member_id,
+               m.name  AS member_name,
+               t.total_count,
+               t.remaining_count,
+               t.start_date,
+               t.end_date,
+               t.is_active,
+               t.created_at
+        FROM pt_ticket t
+                 INNER JOIN member tr ON t.trainer_id = tr.member_id
+                 INNER JOIN member m ON t.member_id = m.member_id
+        WHERE t.trainer_id = #{trainerId}
+        ORDER BY t.is_active DESC, m.name, t.created_at DESC
+    </select>
+
+    <!-- 특정 회원+트레이너 조합의 횟수권 목록 조회 -->
+    <select id="findByMemberAndTrainer" resultType="com.aenggukland.letspt.ptticket.PtTicketResponse">
+        SELECT t.ticket_id,
+               t.trainer_id,
+               tr.name AS trainer_name,
+               t.member_id,
+               m.name  AS member_name,
+               t.total_count,
+               t.remaining_count,
+               t.start_date,
+               t.end_date,
+               t.is_active,
+               t.created_at
+        FROM pt_ticket t
+                 INNER JOIN member tr ON t.trainer_id = tr.member_id
+                 INNER JOIN member m ON t.member_id = m.member_id
+        WHERE t.member_id = #{memberId}
+          AND t.trainer_id = #{trainerId}
+        ORDER BY t.is_active DESC, t.created_at DESC
+    </select>
+
+    <!-- 수업 완료 시 차감용: 가장 오래된 활성 횟수권 조회 -->
+    <select id="findOldestActiveTicket" resultType="com.aenggukland.letspt.ptticket.PtTicket">
+        SELECT *
+        FROM pt_ticket
+        WHERE member_id = #{memberId}
+          AND trainer_id = #{trainerId}
+          AND is_active = TRUE
+          AND remaining_count > 0
+        ORDER BY created_at
+        LIMIT 1
+    </select>
+
+    <!-- 잔여 횟수 1회 차감, 횟수가 0이 되면 자동 비활성화 -->
+    <update id="deductCount" parameterType="Long">
+        UPDATE pt_ticket
+        SET remaining_count = remaining_count - 1,
+            is_active       = CASE WHEN remaining_count - 1 = 0 THEN FALSE ELSE is_active END,
+            updated_at      = CURRENT_TIMESTAMP
+        WHERE ticket_id = #{ticketId}
+          AND remaining_count > 0
+          AND is_active = TRUE
+    </update>
+
+    <!-- 수동 비활성화 -->
+    <update id="deactivate" parameterType="Long">
+        UPDATE pt_ticket
+        SET is_active  = FALSE,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE ticket_id = #{ticketId}
+    </update>
+
+</mapper>
