@@ -73,4 +73,23 @@
         WHERE username = #{username}
     </update>
 
+    <!-- 활성 트레이너 전체 목록: TRAINER(2)·MASTER(3) 역할, 삭제 제외, 이름 오름차순 -->
+    <select id="findAllTrainers" resultType="com.aenggukland.letspt.member.TrainerResponse">
+        SELECT member_id, name, fitness_goal, phone_number, profile_image_url
+        FROM member
+        WHERE role_id IN (2, 3)
+          AND is_deleted = FALSE
+        ORDER BY name ASC
+    </select>
+
+    <!-- 트레이너 단건 조회: TRAINER(2)·MASTER(3) 역할만 반환 (일반 회원 조회 차단) -->
+    <select id="findTrainerById" parameterType="long"
+            resultType="com.aenggukland.letspt.member.TrainerResponse">
+        SELECT member_id, name, fitness_goal, phone_number, profile_image_url
+        FROM member
+        WHERE member_id = #{memberId}
+          AND role_id IN (2, 3)
+          AND is_deleted = FALSE
+    </select>
+
 </mapper>

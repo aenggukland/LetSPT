@@ -216,4 +216,17 @@ public class MemberService {
         refreshTokenMapper.deleteByUsername(username);
         memberMapper.softDelete(username); // 물리 삭제 대신 소프트 삭제
     }
+
+    // 트레이너 목록 조회: TRAINER·MASTER 역할의 활성 회원을 이름 오름차순으로 반환한다
+    @Transactional(readOnly = true)
+    public List<TrainerResponse> getTrainerList() {
+        return memberMapper.findAllTrainers();
+    }
+
+    // 트레이너 단건 조회: TRAINER·MASTER 역할인 경우에만 프로필을 반환한다
+    @Transactional(readOnly = true)
+    public TrainerResponse getTrainerDetail(Long trainerId) {
+        return memberMapper.findTrainerById(trainerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+    }
 }

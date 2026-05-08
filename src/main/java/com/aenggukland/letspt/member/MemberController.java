@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Member", description = "회원 프로필 API — 조회/수정, 비밀번호 변경, 프로필 이미지, 회원 탈퇴 (JWT 인증 필수)")
@@ -79,5 +80,22 @@ public class MemberController {
     public ResponseEntity<Void> withdraw(@RequestAttribute("username") String username) {
         memberService.withdraw(username);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "트레이너 목록 조회", description = "활성 트레이너·마스터 전체 목록을 이름 오름차순으로 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/trainers")
+    public ResponseEntity<List<TrainerResponse>> getTrainerList() {
+        return ResponseEntity.ok(memberService.getTrainerList());
+    }
+
+    @Operation(summary = "트레이너 단건 조회", description = "트레이너 ID로 공개 프로필을 조회합니다. 일반 회원 ID 입력 시 404를 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "트레이너 없음")
+    })
+    @GetMapping("/trainers/{trainerId}")
+    public ResponseEntity<TrainerResponse> getTrainerDetail(@PathVariable Long trainerId) {
+        return ResponseEntity.ok(memberService.getTrainerDetail(trainerId));
     }
 }

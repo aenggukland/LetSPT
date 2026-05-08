@@ -3,6 +3,7 @@ package com.aenggukland.letspt.member;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 // 회원 데이터 접근 Mapper: SQL은 MemberMapper.xml에만 작성한다
@@ -30,4 +31,10 @@ public interface MemberMapper {
 
     // 소프트 삭제: is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP 설정
     void softDelete(String username);
+
+    // 활성 트레이너 전체 목록 조회 (role_id = TRAINER 또는 MASTER, 삭제 제외)
+    List<TrainerResponse> findAllTrainers();
+
+    // 트레이너 단건 조회 (role_id 검증 포함)
+    Optional<TrainerResponse> findTrainerById(Long memberId);
 }

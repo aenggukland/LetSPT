@@ -43,6 +43,7 @@ public class SecurityConfig {
                             "/api/auth/refresh", "/api/auth/logout").permitAll()       // 인증 API
                     .requestMatchers("/ws/chat/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger UI
+                    .requestMatchers("/api/member/trainers", "/api/member/trainers/**").permitAll() // 트레이너 목록·프로필 공개 조회
                     .requestMatchers("/member/**").hasRole("MEMBER")
                     .requestMatchers("/admin/**").hasAnyRole("TRAINER", "MASTER")
                     .requestMatchers("/master/**").hasRole("MASTER")
