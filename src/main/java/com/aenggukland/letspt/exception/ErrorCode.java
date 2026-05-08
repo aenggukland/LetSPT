@@ -69,6 +69,9 @@ public enum ErrorCode {
     DELETE_FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "제거할 FCM 토큰이 없습니다."),
     FCM_TOKEN_SEND_FAILED(HttpStatus.CONFLICT, "알림 전송에 실패했습니다."),
 
+    // AI Chatbot
+    AI_API_CALL_FAILED(HttpStatus.BAD_GATEWAY, "AI 서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요."),
+
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
