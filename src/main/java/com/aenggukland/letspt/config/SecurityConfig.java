@@ -43,6 +43,7 @@ public class SecurityConfig {
                             "/api/auth/refresh", "/api/auth/logout").permitAll()       // 인증 API
                     .requestMatchers("/ws/chat/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger UI
+                    .requestMatchers("/api/diet-feedback/board/**").permitAll()        // 피드백 목록은 인증 불필요
                     .requestMatchers("/member/**").hasRole("MEMBER")
                     .requestMatchers("/admin/**").hasAnyRole("TRAINER", "MASTER")
                     .requestMatchers("/master/**").hasRole("MASTER")

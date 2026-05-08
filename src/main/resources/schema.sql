@@ -198,3 +198,19 @@ CREATE TABLE IF NOT EXISTS fcm_token (
     is_expired    BOOLEAN      DEFAULT FALSE,
     CONSTRAINT fk_fcm_token_member FOREIGN KEY (member_id) REFERENCES member(member_id)
 );
+-- =========================
+-- 13. DIET_FEEDBACK (식단 이모지 피드백)
+-- =========================
+CREATE TABLE IF NOT EXISTS diet_feedback (
+    feedback_id BIGSERIAL PRIMARY KEY,
+    board_id    BIGINT       NOT NULL,
+    trainer_id  BIGINT       NOT NULL,
+    member_id   BIGINT       NOT NULL,
+    type        VARCHAR(20)  NOT NULL,
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_feedback_board   FOREIGN KEY (board_id)   REFERENCES board(board_id),
+    CONSTRAINT fk_feedback_trainer FOREIGN KEY (trainer_id) REFERENCES member(member_id),
+    CONSTRAINT fk_feedback_member  FOREIGN KEY (member_id)  REFERENCES member(member_id),
+    CONSTRAINT uq_feedback_board_trainer UNIQUE (board_id, trainer_id)
+);

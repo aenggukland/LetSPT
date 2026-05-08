@@ -65,6 +65,10 @@ public enum ErrorCode {
     // Schedule - Finish
     SCHEDULE_FINISH_DENIED(HttpStatus.CONFLICT, "수락(COMPLETE) 상태의 수업만 완료 처리할 수 있습니다."),
 
+    // Diet Feedback
+    DIET_FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "피드백을 찾을 수 없습니다."),
+    DIET_FEEDBACK_ACCESS_DENIED(HttpStatus.FORBIDDEN, "식단 피드백 권한이 없습니다."),
+
     //FCM
     DELETE_FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "제거할 FCM 토큰이 없습니다."),
     FCM_TOKEN_SEND_FAILED(HttpStatus.CONFLICT, "알림 전송에 실패했습니다."),
